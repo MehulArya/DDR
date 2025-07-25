@@ -19,7 +19,7 @@ The **Document Data Registry (DDR) Portal** is a role-based document management 
 
 -Mehul Arya
 
--Praveen Yadav
+-Parveen Yadav
 
 -Riya Aggarwal
 
