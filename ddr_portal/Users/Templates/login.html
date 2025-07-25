@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'CSS/login.css' %}">
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-box">
+            <div class="logo-header">
+                <img src="{% static 'images/skit_logo.jpg' %}" alt="SKIT Logo">
+            </div>
+            <h2>Login</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="{% url 'signup' %}">Sign up</a></p>
+        </div>
+    </div>
+</body>
+</html>
