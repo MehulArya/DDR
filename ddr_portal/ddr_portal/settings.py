@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Users'
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'ddr_portal.urls'
 
@@ -74,10 +77,21 @@ WSGI_APPLICATION = 'ddr_portal.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'mssql',
+        'NAME': 'ddr',     # 🔁 Replace with your actual database name
+        'HOST': 'Mehul-Laptop',
+        'PORT': '',
+
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',  # Or 18, if you installed that
+            'trusted_connection': 'yes',
+            'extra_params': 'TrustServerCertificate=yes;',
+        },
     }
 }
+
+
+
 
 
 # Password validation
