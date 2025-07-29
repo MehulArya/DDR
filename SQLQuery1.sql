@@ -45,6 +45,44 @@ INSERT INTO PERMISSIONS (prm_name, prm_codename, prm_description) VALUES
 ('Update Files', 'F004', 'Modify or replace existing files.'); 
 GO
 
+-- Create Role_Permissions
+CREATE TABLE ROLE_PERMISSIONS (
+    role_id INT NOT NULL,
+    permission_code VARCHAR(50) NOT NULL,
+    PRIMARY KEY (role_id, permission_code),
+    FOREIGN KEY (role_id) REFERENCES ROLES(role_id),
+    FOREIGN KEY (permission_code) REFERENCES PERMISSIONS(prm_codename)
+);
+GO
+
+-- Insert into ROLE_PERMISSIONS
+INSERT INTO ROLE_PERMISSIONS (role_id, permission_code) VALUES
+(1, 'A001'), 
+(1, 'A002'),
+(1, 'A003'),
+(1, 'H001'),
+(1, 'H002'),
+(1, 'H003'),
+(1, 'H004'),
+(1, 'F001'),
+(1, 'F002'),
+(1, 'F003'),
+(1, 'F004'),
+(2, 'H001'),
+(2, 'H002'),
+(2, 'H003'),
+(2, 'H004'),
+(2, 'F001'),
+(2, 'F002'),
+(2, 'F003'),
+(2, 'F004'),
+(3, 'F001'),
+(3, 'F002'),
+(3, 'F003'),
+(3, 'F004');  
+
+
+
 -- Create USER_ROLES table
 CREATE TABLE USER_ROLES (
     user_id INT,
