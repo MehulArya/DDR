@@ -148,3 +148,33 @@ VALUES ('Academic Calendar', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
 ('Time Table CSE',NULL,'TLP',SYSDATETIME(),SYSDATETIME(),1),
 ('Virtual Lab Records',NULL,'Internal',SYSDATETIME(),SYSDATETIME(),1)
 ;
+
+-- Create Documents Table
+CREATE TABLE DOCUMENTS (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    file_blob VARBINARY(MAX) NULL,
+    folder_id INT,
+    uploaded_by INT,
+    is_latest_version BIT NOT NULL DEFAULT 1,
+    file_size BIGINT,
+    file_type VARCHAR(50),
+    dynamic_data NVARCHAR(MAX),
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_accessed DATETIME NULL,
+    FOREIGN KEY (folder_id) REFERENCES FOLDERS(id),
+    FOREIGN KEY (uploaded_by) REFERENCES auth_user(id)
+);
+
+CREATE INDEX idx_folder_latest ON DOCUMENTS (folder_id, is_latest_version);
+
+-- INSERT into Documents
+INSERT INTO DOCUMENTS(title, description, folder_id) 
+VALUES
+('Academic Calender', 'In this folder, we will manage Academic Calender of the CSE department.', 1),
+('Alumni Activity Records', 'Alumni Records – it contain complete list of Alumni who have been registered on portal.', 2),
+('Sports Achievements', 'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.', 3),
+('CO-PO-PSO Mapping and Attainment', 'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO', 4),
+('Course File', 'In this file we will manage internal audit review status report of Course file', 5),
+('Course Handbook', 'In this file we will manage internal audit review status report of Course handbook', 5);
