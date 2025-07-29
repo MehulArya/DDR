@@ -32,22 +32,17 @@ GO
 
 -- Insert into PERMISSIONS
 INSERT INTO PERMISSIONS (prm_name, prm_codename, prm_description) VALUES
-('Access All Folders', 'A001', 'Admins have the ability to view and manage all existing folders within the portal.'),
-('Create New Folder', 'A002', 'Capability to establish new organizational folders for content.'),
-('Add New Column', 'A003', 'Ability to add new data fields or attributes (columns) to existing structures, likely for metadata or categorization.'),
-('Permission Change', 'A004', 'Manage and modify user permissions across the portal.'),
-('Password Change', 'A005', 'Reset or change passwords for other users.'),
-('View History', 'A006', 'Uploaded history of faculty.'),
-('Access Folders (according to Category)', 'H001', 'Heads can access and view folders relevant to their assigned categories.'),
+('Create New Folder', 'A001', 'Capability to establish new organizational folders for content.'),
+('Permission Change', 'A002', 'Manage and modify user permissions across the portal.'),
+('Delete Folders', 'A003', 'To remove unutilized folders'),
+('Access Folders', 'H001', 'Admins have the ability to view and manage all existing folders within the portal.'),
 ('View Actions', 'H002', 'Monitor activities and changes made within their purview.'),
-('Get Email on Incorrect Upload', 'H003', 'Receive notifications via email if an incorrect file upload occurs, ensuring data quality.'),
-('Add Column', 'H004', 'Similar to Admin, Heads might have the ability to add columns within their specific categories.'),
-('View History', 'H005', 'Uploaded history of faculty.'),
+('Add Column', 'H003', 'Similar to Admin, Heads might have the ability to add columns within their specific categories.'),
+('Delete Column', 'H004', 'Similar to Admin, Heads might have the ability to add columns within their specific categories.'),
 ('Upload Files', 'F001', 'Faculty members can upload documents to the portal.'),
 ('View History', 'F002', 'Access a record of their past uploads and activities.'),
 ('Retrieve Files', 'F003', 'Download or access files they have previously uploaded.'),
-('Update Files', 'F004', 'Modify or replace existing files.'),
-('Get Email on Incorrect Upload', 'F005', 'Similar to the Head role, Faculty also receive notifications for their own incorrect uploads.');
+('Update Files', 'F004', 'Modify or replace existing files.'); 
 GO
 
 -- Create USER_ROLES table
@@ -55,7 +50,7 @@ CREATE TABLE USER_ROLES (
     user_id INT,
     role_id INT,
     assigned_at DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (user_id) REFERENCES user_auth(id),
+    FOREIGN KEY (user_id) REFERENCES auth_user(id),
     FOREIGN KEY (role_id) REFERENCES ROLES(role_id),
     PRIMARY KEY (user_id, role_id)
 );
