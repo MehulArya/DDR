@@ -78,14 +78,13 @@ WSGI_APPLICATION = 'ddr_portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'ddr',     # 🔁 Replace with your actual database name
-        'HOST': 'Mehul-Laptop',
+        'NAME': 'DDR_COLLEGE_PROJECT',     # 🔁 Replace with your actual database name
+        'HOST': 'RIYA-LAPTOP',
         'PORT': '',
 
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',  # Or 18, if you installed that
             'trusted_connection': 'yes',
-            'extra_params': 'TrustServerCertificate=yes;',
         },
     }
 }
@@ -118,11 +117,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
