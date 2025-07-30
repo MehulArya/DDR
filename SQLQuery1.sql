@@ -154,27 +154,341 @@ CREATE TABLE DOCUMENTS (
     id INT PRIMARY KEY IDENTITY(1,1),
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    file_blob VARBINARY(MAX) NULL,
-    folder_id INT,
-    uploaded_by INT,
-    is_latest_version BIT NOT NULL DEFAULT 1,
-    file_size BIGINT,
-    file_type VARCHAR(50),
+    folder_id INT,   
     dynamic_data NVARCHAR(MAX),
-    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_accessed DATETIME NULL,
-    FOREIGN KEY (folder_id) REFERENCES FOLDERS(id),
-    FOREIGN KEY (uploaded_by) REFERENCES auth_user(id)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (folder_id) REFERENCES FOLDERS(id)
 );
 
-CREATE INDEX idx_folder_latest ON DOCUMENTS (folder_id, is_latest_version);
+CREATE INDEX idx_folder_latest ON DOCUMENTS (folder_id);
 
--- INSERT into Documents
-INSERT INTO DOCUMENTS(title, description, folder_id) 
-VALUES
-('Academic Calender', 'In this folder, we will manage Academic Calender of the CSE department.', 1),
-('Alumni Activity Records', 'Alumni Records – it contain complete list of Alumni who have been registered on portal.', 2),
-('Sports Achievements', 'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.', 3),
-('CO-PO-PSO Mapping and Attainment', 'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO', 4),
-('Course File', 'In this file we will manage internal audit review status report of Course file', 5),
-('Course Handbook', 'In this file we will manage internal audit review status report of Course handbook', 5);
+INSERT INTO DOCUMENTS (
+    title,
+    description,
+    folder_id,
+    dynamic_data
+)
+VALUES (
+        'Academic Calender',
+        'In this folder, we will manage Academic Calender of the CSE department.',
+        1,
+        N'{
+      "Academic_Calendar":{
+      "columns": [
+        { "name": "Semester", "type": "INT", "constraints": "NOT NULL, CHECK (Semester BETWEEN 1 AND 8), PRIMARY KEY" },
+        { "name": "Commencement_of_Classes", "type": "DATE" },
+        { "name": "Assignment1_Release_Dates", "type": "DATE" },
+        { "name": "Assignment1_Submission_Dates", "type": "DATE" },
+        { "name": "Commencement_of_First_Mid_Term_I_Theory_Exams", "type": "DATE" },
+        { "name": "Last_Date_of_Showing_Answer_Sheets_of_MT1_to_Students", "type": "DATE" },
+        { "name": "Submission_of_Marks_of_MT1_to_Exam_Cell", "type": "DATE" },
+        { "name": "Remedial_Classes_for_Weak_Students", "type": "VARCHAR(255)" },
+        { "name": "Commencement_of_I_Internal_Practical_Exams", "type": "DATE" },
+        { "name": "Release_of_Marks_of_I_Internal_Practical_Exams", "type": "DATE" },
+        { "name": "Assignment2_Release_Dates", "type": "DATE" },
+        { "name": "Assignment2_Submission_Dates", "type": "DATE" },
+        { "name": "Commencement_of_Mid_Term_II_Theory_Exams", "type": "DATE" },
+        { "name": "Last_Date_of_Showing_Answer_Sheets_of_MT2_to_Students", "type": "DATE" },
+        { "name": "Submission_of_Marks_of_MT2_to_Exam_Cell", "type": "DATE" },
+        { "name": "Commencement_of_II_Internal_Practical_Exams", "type": "DATE" },
+        { "name": "Release_of_Marks_of_II_Internal_Practical_Exams", "type": "DATE" },
+        { "name": "Last_Working_Day", "type": "DATE" },
+        { "name": "Commencement_of_University_Practical_Exam", "type": "DATE" },
+        { "name": "Commencement_of_End_Term_Theory_Exam", "type": "DATE" },
+        { "name": "Project_Report_Hardware_Submission", "type": "DATE" },
+        { "name": "DPAQIC_Meeting_for_Selection_of_Optional_Subjects_for_Next_Semester", "type": "DATE" },
+        { "name": "Subjects_Allotment_to_Faculty_Members_for_Next_Semester", "type": "DATE" },
+        { "name": "Commencement_of_Classes_for_Even_Semester", "type": "DATE" }
+      ]
+        }'
+    ),
+    (
+       'Alumni Activity Records',
+        'Alumni Records – it contain complete list of Alumni who have been registered on portal.',
+        2,
+        N'{"Alumni_Activities_Record":{
+          "columns": [
+            { "name": "S_No", "type": "INT", "constraints": "PRIMARY KEY" },
+            { "name": "Date", "type": "DATE" },
+            { "name": "Event_Name", "type": "VARCHAR(255)" },
+            { "name": "Owner_of_Event", "type": "VARCHAR(100)" },
+            { "name": "Alumni_Name", "type": "VARCHAR(100)" },
+            { "name": "Branch", "type": "VARCHAR(50)" },
+            { "name": "Pass_Out_Year", "type": "INT" },
+            { "name": "Email_ID", "type": "VARCHAR(100)" },
+            { "name": "Mobile_Number", "type": "VARCHAR(15)" },
+            { "name": "Participant_List", "type": "TEXT" },
+            { "name": "Poster", "type": "TEXT" },
+            { "name": "Notice", "type": "TEXT" },
+            { "name": "Summary_of_Event", "type": "TEXT" },
+            { "name": "Photos_of_Event", "type": "TEXT" },
+            { "name": "Feedback", "type": "TEXT" }
+          ]
+        }'
+        ),
+        (
+        'Alumni Records',
+        'Alumni Records – it contain complete list of Alumni who have been registered on portal',
+        2,
+         N'{
+          "Alumni_Master_File": {
+            "columns": [
+              { "name": "Name", "type": "VARCHAR(100)" "constraints": "PRIMARY KEY" },
+              { "name": "Department", "type": "VARCHAR(100)" },
+              { "name": "Roll_Number", "type": "VARCHAR(50)" },
+              { "name": "Registration_Number", "type": "VARCHAR(50)" },
+              { "name": "Course", "type": "VARCHAR(100)" },
+              { "name": "Batch_Year", "type": "INT" },
+              { "name": "Email", "type": "VARCHAR(100)" },
+              { "name": "Phone", "type": "VARCHAR(15)" },
+              { "name": "Current_Address", "type": "TEXT" },
+              { "name": "Permanent_Address", "type": "TEXT" },
+              { "name": "City", "type": "VARCHAR(50)" },
+              { "name": "State", "type": "VARCHAR(50)" },
+              { "name": "Pincode", "type": "VARCHAR(10)" },
+              { "name": "Country", "type": "VARCHAR(50)" },
+              { "name": "Membership_Status", "type": "VARCHAR(50)" },
+              { "name": "Membership_Number", "type": "VARCHAR(50)" },
+              { "name": "Course_Completed", "type": "VARCHAR(100)" },
+              { "name": "Institution", "type": "VARCHAR(100)" },
+              { "name": "Current_Workplace", "type": "VARCHAR(100)" },
+              { "name": "LinkedIn_Profile", "type": "VARCHAR(255)" },
+              { "name": "Facebook_Profile", "type": "VARCHAR(255)" },
+              { "name": "Instagram_Profile", "type": "VARCHAR(255)" },
+              { "name": "Years_of_Experience", "type": "INT" },
+              { "name": "Technical_Skills", "type": "TEXT" },
+              { "name": "Worked_in_Abroad", "type": "VARCHAR(10)" },
+              { "name": "Date_of_Birth", "type": "DATE" },
+              { "name": "Gender", "type": "VARCHAR(10)" },
+              { "name": "Alumni_Type", "type": "VARCHAR(50)" }
+            ],
+          }'
+        ),
+        (
+        'SODECA Marks distribution',
+        'In this File we will manage SODECA Marks for CSE students',
+        6,
+            N'{
+              "SODECA_Marks_Distribution": {
+                "columns": [
+                  { "name": "S_No", "type": "INT" "constraints": "PRIMARY KEY"},
+                  { "name": "Sem", "type": "INT" },
+                  { "name": "Batch", "type": "VARCHAR(50)" },
+                  { "name": "Batch_Counselor", "type": "VARCHAR(100)" },
+                  { "name": "University_Roll_No", "type": "VARCHAR(50)" },
+                  { "name": "Name_of_Student", "type": "VARCHAR(100)" },
+                  { "name": "Discipline_Marks", "type": "INT" },
+                  { "name": "Games_Sports_Field_Activity", "type": "INT" },
+                  { "name": "Cultural_Literary_Activities", "type": "INT" },
+                  { "name": "Academic_Technical_Professional_Development_Activities", "type": "INT" },
+                  { "name": "Social_Outreach_Personal_Development_Activities", "type": "INT" },
+                  { "name": "Anandan_Program_Activities", "type": "INT" },
+                  { "name": "Total_Marks", "type": "INT" }
+                ]
+              },'
+            ),
+            (
+            'Sports Achievements',
+            'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
+            3,
+            N'{
+                "NAAC_Sports_Format": {
+            "columns": [
+              { "name": "Year", "type": "INT" },
+              { "name": "Award_Name", "type": "VARCHAR(255)" },
+              { "name": "Team_Or_Individual", "type": "VARCHAR(50)" },
+              { "name": "Level", "type": "VARCHAR(50)" },
+              { "name": "Sports_Or_Cultural", "type": "VARCHAR(50)" },
+              { "name": "Student_Name", "type": "VARCHAR(100)" },
+              { "name": "Proof_Link", "type": "TEXT" }
+            ],
+            "constraints": {
+              "primary_key": ["Year", "Award_Name", "Student_Name"]
+            }
+          },
+          "QIV_Sports_Format": {
+            "columns": [
+              { "name": "Event_Title", "type": "VARCHAR(255)" },
+              { "name": "Activity_Name", "type": "VARCHAR(255)" },
+              { "name": "Type", "type": "VARCHAR(50)" },
+              { "name": "Awarding_Organization", "type": "VARCHAR(255)" },
+              { "name": "Level", "type": "VARCHAR(50)" },
+              { "name": "Activity_Date_From", "type": "DATE" },
+              { "name": "Activity_Date_To", "type": "DATE" },
+              { "name": "Team_Members_Count", "type": "INT" },
+              { "name": "Position", "type": "VARCHAR(50)" },
+              { "name": "Proof_Enclosed", "type": "VARCHAR(10)" }
+            ],
+            "constraints": {
+              "primary_key": ["Event_Title", "Activity_Name", "Activity_Date_From"]
+            }
+          },
+          "NBA_Sports_Format": {
+            "columns": [
+              { "name": "Year", "type": "INT" },
+              { "name": "Award_Name", "type": "VARCHAR(255)" },
+              { "name": "Team_Or_Individual", "type": "VARCHAR(50)" },
+              { "name": "Level", "type": "VARCHAR(50)" },
+              { "name": "Sports_Or_Cultural", "type": "VARCHAR(50)" },
+              { "name": "Student_Name", "type": "VARCHAR(100)" }
+            ],
+            "constraints": {
+              "primary_key": ["Year", "Award_Name", "Student_Name"]
+            }'
+            ),
+            (
+            'CO-PO-PSO Mapping and Attainment',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+            N'{
+          "Practical_Midterm_Performance": {
+            "columns": [
+              { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
+              { "name": "RTU_Roll_Number", "type": "VARCHAR(50)", "constraints": ["NOT NULL"] },
+              { "name": "Student_Name", "type": "VARCHAR(100)" },
+              { "name": "Q1", "type": "INT" },
+              { "name": "Q2", "type": "INT" },
+              { "name": "Total", "type": "INT" },
+              { "name": "Viva", "type": "INT" },
+              { "name": "Lab_Performance", "type": "INT" },
+              { "name": "File_Work", "type": "INT" },
+              { "name": "Attendance", "type": "INT" },
+              { "name": "Mapped_CO_Q1", "type": "VARCHAR(10)" },
+              { "name": "Mapped_CO_Q2", "type": "VARCHAR(10)" }
+            ]
+          },
+          "Practical_CO_Attainment_Sectionwise": {
+            "columns": [
+              { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
+              { "name": "Roll_No", "type": "VARCHAR(50)" },
+              { "name": "Student_Name", "type": "VARCHAR(100)" },
+              { "name": "I_Midterm_Exam", "type": "INT" },
+              { "name": "I_Viva", "type": "INT" },
+              { "name": "I_Lab_Performance", "type": "INT" },
+              { "name": "I_File_Work", "type": "INT" },
+              { "name": "I_Attendance", "type": "INT" },
+              { "name": "Total_A", "type": "INT" },
+              { "name": "II_Midterm_Exam", "type": "INT" },
+              { "name": "II_Viva", "type": "INT" },
+              { "name": "II_Lab_Performance", "type": "INT" },
+              { "name": "II_File_Work", "type": "INT" },
+              { "name": "II_Attendance", "type": "INT" },
+              { "name": "Total_B", "type": "INT" },
+              { "name": "Average_Internal_Marks", "type": "DECIMAL(5,2)" },
+              { "name": "External_Lab_Performance", "type": "INT" },
+              { "name": "External_Viva", "type": "INT" },
+              { "name": "Total_External_Marks", "type": "INT" },
+              { "name": "Total_Marks", "type": "INT" }
+            ]
+          },
+          "Practical_CO_Attainment_Summary": {
+            "columns": [
+              { "name": "Course_Code", "type": "VARCHAR(20)", "constraints": ["PRIMARY KEY"] },
+              { "name": "Course_Name", "type": "VARCHAR(100)" },
+              { "name": "Attainment_I_Midterm_Evaluation", "type": "DECIMAL(5,2)" },
+              { "name": "Attainment_II_Midterm_Evaluation", "type": "DECIMAL(5,2)" },
+              { "name": "Attainment_External_Lab_Performance", "type": "DECIMAL(5,2)" },
+              { "name": "Attainment_External_Viva", "type": "DECIMAL(5,2)" },
+              { "name": "Average_CO_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "Consolidated_Attainment_Level", "type": "DECIMAL(5,2)" }
+            ]
+          },
+          "Theory_Midterm_Attainment": {
+            "columns": [
+              { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
+              { "name": "Section", "type": "VARCHAR(20)" },
+              { "name": "Roll_No", "type": "VARCHAR(50)" },
+              { "name": "Part_A", "type": "INT" },
+              { "name": "Part_B", "type": "INT" },
+              { "name": "Part_C", "type": "INT" },
+              { "name": "Total_20", "type": "INT" },
+              { "name": "Assignment_10", "type": "INT" },
+              { "name": "Total_30", "type": "INT" },
+              { "name": "CO1", "type": "VARCHAR(10)" },
+              { "name": "CO2", "type": "VARCHAR(10)" },
+              { "name": "CO3", "type": "VARCHAR(10)" },
+              { "name": "CO4", "type": "VARCHAR(10)" },
+              { "name": "CO5", "type": "VARCHAR(10)" },
+              { "name": "CO6", "type": "VARCHAR(10)" },
+              { "name": "CO7", "type": "VARCHAR(10)" },
+              { "name": "CO8", "type": "VARCHAR(10)" }
+            ]
+          },
+          "Theory_CO_Attainment_Summary": {
+            "columns": [
+              { "name": "Course_Code", "type": "VARCHAR(20)", "constraints": ["PRIMARY KEY"] },
+              { "name": "Course_Name", "type": "VARCHAR(100)" },
+              { "name": "CO1_Percentage", "type": "DECIMAL(5,2)" },
+              { "name": "CO1_Level", "type": "VARCHAR(10)" },
+              { "name": "CO2_Percentage", "type": "DECIMAL(5,2)" },
+              { "name": "CO2_Level", "type": "VARCHAR(10)" },
+              { "name": "CO3_Percentage", "type": "DECIMAL(5,2)" },
+              { "name": "CO3_Level", "type": "VARCHAR(10)" },
+              { "name": "CO4_Percentage", "type": "DECIMAL(5,2)" },
+              { "name": "CO4_Level", "type": "VARCHAR(10)" },
+              { "name": "CO5_Percentage", "type": "DECIMAL(5,2)" },
+              { "name": "CO5_Level", "type": "VARCHAR(10)" }
+            ]
+          },
+          "Theory_CO_Attainment_Batchwise": {
+            "columns": [
+              { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
+              { "name": "Semester", "type": "INT" },
+              { "name": "Subject_Code", "type": "VARCHAR(20)" },
+              { "name": "Subject_Name", "type": "VARCHAR(100)" },
+              { "name": "CO1", "type": "DECIMAL(5,2)" },
+              { "name": "CO2", "type": "DECIMAL(5,2)" },
+              { "name": "CO3", "type": "DECIMAL(5,2)" },
+              { "name": "CO4", "type": "DECIMAL(5,2)" },
+              { "name": "CO5", "type": "DECIMAL(5,2)" },
+              { "name": "CO6", "type": "DECIMAL(5,2)" },
+              { "name": "Internal_Exam_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "Assignment_Unit_Test_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "Internal_Assessment_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "External_Exam_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "Overall_Attainment_Level", "type": "DECIMAL(5,2)" }
+            ]
+          },
+          "Practical_CO_Attainment_Batchwise": {
+            "columns": [
+              { "name": "Sr_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
+              { "name": "Semester", "type": "INT" },
+              { "name": "Subject_Code", "type": "VARCHAR(20)" },
+              { "name": "Subject_Name", "type": "VARCHAR(100)" },
+              { "name": "CO1", "type": "DECIMAL(5,2)" },
+              { "name": "CO2", "type": "DECIMAL(5,2)" },
+              { "name": "CO3", "type": "DECIMAL(5,2)" },
+              { "name": "CO4", "type": "DECIMAL(5,2)" },
+              { "name": "CO5", "type": "DECIMAL(5,2)" },
+              { "name": "CO6", "type": "DECIMAL(5,2)" },
+              { "name": "I_Midterm_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "II_Midterm_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "Internal_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "External_Attainment", "type": "DECIMAL(5,2)" },
+              { "name": "Consolidated_Attainment_Level", "type": "DECIMAL(5,2)" }
+            ]
+          },
+          "PO_PSO_Attainment_Summary": {
+            "columns": [
+              { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
+              { "name": "Course_Code", "type": "VARCHAR(20)" },
+              { "name": "Course_Name", "type": "VARCHAR(100)" },
+              { "name": "Consolidated_CO", "type": "VARCHAR(20)" },
+              { "name": "PO1", "type": "DECIMAL(5,2)" },
+              { "name": "PO2", "type": "DECIMAL(5,2)" },
+              { "name": "PO3", "type": "DECIMAL(5,2)" },
+              { "name": "PO4", "type": "DECIMAL(5,2)" },
+              { "name": "PO5", "type": "DECIMAL(5,2)" },
+              { "name": "PO6", "type": "DECIMAL(5,2)" },
+              { "name": "PO7", "type": "DECIMAL(5,2)" },
+              { "name": "PO8", "type": "DECIMAL(5,2)" },
+              { "name": "PO9", "type": "DECIMAL(5,2)" },
+              { "name": "PO10", "type": "DECIMAL(5,2)" },
+              { "name": "PO11", "type": "DECIMAL(5,2)" },
+              { "name": "PO12", "type": "DECIMAL(5,2)" },
+              { "name": "PSO1", "type": "DECIMAL(5,2)" },
+              { "name": "PSO2", "type": "DECIMAL(5,2)" },
+              { "name": "PSO3", "type": "DECIMAL(5,2)" }
+            ]
+          }'
+);
