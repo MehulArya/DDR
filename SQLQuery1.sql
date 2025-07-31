@@ -491,38 +491,7 @@ VALUES (
               { "name": "PSO3", "type": "DECIMAL(5,2)" }
             ]
           }'
-);
-
-
-select * from DOCUMENTS;
-
-USE ddr;
-SELECT * FROM DOCUMENTS;
-
-UPDATE DOCUMENTS SET title = 'Sports Achievements NAAC Format', dynamic_data =N'{
-                "NAAC_Sports_Format": {
-            "columns": [
-              { "name": "Year", "type": "INT" },
-              { "name": "Award_Name", "type": "VARCHAR(255)" },
-              { "name": "Team_Or_Individual", "type": "VARCHAR(50)" },
-              { "name": "Level", "type": "VARCHAR(50)" },
-              { "name": "Sports_Or_Cultural", "type": "VARCHAR(50)" },
-              { "name": "Student_Name", "type": "VARCHAR(100)" },
-              { "name": "Proof_Link", "type": "TEXT" }
-            ],
-            "constraints": {
-              "primary_key": ["Year", "Award_Name", "Student_Name"]
-            }
-          }' WHERE ID = 5;
-
-
-INSERT INTO DOCUMENTS (
-    title,
-    description,
-    folder_id,
-    dynamic_data
-)
-VALUES 
+),
 
   (
     'Virtual_Lab_Monthly_Usage',
@@ -783,4 +752,11 @@ VALUES
             ]
         }
     }'
-)
+);
+
+
+
+
+
+
+
