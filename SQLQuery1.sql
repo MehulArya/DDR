@@ -118,7 +118,7 @@ VALUES ('Academic Calendar', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
 ('CO-PO_Coordinator', NULL, 'OBE', SYSDATETIME(), SYSDATETIME(), 1),
 ('Course File, Lab manual & Handbook Coordinator', NULL, 'Audit', SYSDATETIME(), SYSDATETIME(), 1),
 ('SoDECA & Student Coordinator', NULL, 'MOOCs and Student Data', SYSDATETIME(), SYSDATETIME(), 1),
-('SoDECA & Student Coordinator', NULL, 'MOOCs and Student Data', SYSDATETIME(), SYSDATETIME(), 1),
+('Chief Batch Counselor(CBC) - CSE', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
 ('ERP Coordinator-CSE', NULL, ' Internal', SYSDATETIME(), SYSDATETIME(), 1),
 ('ERP Coordinator-CSE(Allied)', NULL, 'Internal', SYSDATETIME(), SYSDATETIME(), 1),
 ('Events organized by department for students and faculty (Sponsored events & Non Sponsored events)', NULL, 'R & D', SYSDATETIME(), SYSDATETIME(), 1),
@@ -288,7 +288,7 @@ VALUES (
               },'
             ),
             (
-            'Sports Achievements',
+            'Sports Achievements NAAC FORMAT',
             'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
             3,
             N'{
@@ -305,8 +305,12 @@ VALUES (
             "constraints": {
               "primary_key": ["Year", "Award_Name", "Student_Name"]
             }
-          },
-          "QIV_Sports_Format": {
+          }'),
+         ('Sports Achievements QIV Format',
+            'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
+            3,
+            N'{
+            "QIV_Sports_Format": {
             "columns": [
               { "name": "Event_Title", "type": "VARCHAR(255)" },
               { "name": "Activity_Name", "type": "VARCHAR(255)" },
@@ -322,8 +326,13 @@ VALUES (
             "constraints": {
               "primary_key": ["Event_Title", "Activity_Name", "Activity_Date_From"]
             }
-          },
-          "NBA_Sports_Format": {
+            }
+          }'),
+          ('Sports Achievements NBA Format',
+            'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
+            3,
+            N'{
+            "NBA_Sports_Format": {
             "columns": [
               { "name": "Year", "type": "INT" },
               { "name": "Award_Name", "type": "VARCHAR(255)" },
@@ -334,14 +343,16 @@ VALUES (
             ],
             "constraints": {
               "primary_key": ["Year", "Award_Name", "Student_Name"]
+            }
+            }
             }'
-            ),
+           ),
             (
-            'CO-PO-PSO Mapping and Attainment',
+            'CO-PO-PSO Mapping and Attainment Practical_Midterm_Performance',
             'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
             4,
             N'{
-          "Practical_Midterm_Performance": {
+            "Practical_Midterm_Performance": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
               { "name": "RTU_Roll_Number", "type": "VARCHAR(50)", "constraints": ["NOT NULL"] },
@@ -356,8 +367,14 @@ VALUES (
               { "name": "Mapped_CO_Q1", "type": "VARCHAR(10)" },
               { "name": "Mapped_CO_Q2", "type": "VARCHAR(10)" }
             ]
-          },
-          "Practical_CO_Attainment_Sectionwise": {
+            }
+          }'),
+            (
+            'CO-PO-PSO Mapping and Attainment Practical_CO_Attainment_Sectionwise',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+            N'{
+            "Practical_CO_Attainment_Sectionwise": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
               { "name": "Roll_No", "type": "VARCHAR(50)" },
@@ -380,8 +397,14 @@ VALUES (
               { "name": "Total_External_Marks", "type": "INT" },
               { "name": "Total_Marks", "type": "INT" }
             ]
-          },
-          "Practical_CO_Attainment_Summary": {
+            }
+          }'),
+          (
+            'CO-PO-PSO Mapping and Attainment Practical_CO_Attainment_Summary',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+            N'{
+            "Practical_CO_Attainment_Summary": {
             "columns": [
               { "name": "Course_Code", "type": "VARCHAR(20)", "constraints": ["PRIMARY KEY"] },
               { "name": "Course_Name", "type": "VARCHAR(100)" },
@@ -392,8 +415,14 @@ VALUES (
               { "name": "Average_CO_Attainment", "type": "DECIMAL(5,2)" },
               { "name": "Consolidated_Attainment_Level", "type": "DECIMAL(5,2)" }
             ]
-          },
-          "Theory_Midterm_Attainment": {
+            }
+          }'),
+          (
+            'CO-PO-PSO Mapping and Attainment Theory_Midterm_Attainment',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+            N'{
+            "Theory_Midterm_Attainment": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
               { "name": "Section", "type": "VARCHAR(20)" },
@@ -413,8 +442,14 @@ VALUES (
               { "name": "CO7", "type": "VARCHAR(10)" },
               { "name": "CO8", "type": "VARCHAR(10)" }
             ]
-          },
-          "Theory_CO_Attainment_Summary": {
+            }
+          }'),
+          (
+            'CO-PO-PSO Mapping and Attainment Theory_CO_Attainment_Summary',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+          N'{
+            "Theory_CO_Attainment_Summary": {
             "columns": [
               { "name": "Course_Code", "type": "VARCHAR(20)", "constraints": ["PRIMARY KEY"] },
               { "name": "Course_Name", "type": "VARCHAR(100)" },
@@ -429,7 +464,14 @@ VALUES (
               { "name": "CO5_Percentage", "type": "DECIMAL(5,2)" },
               { "name": "CO5_Level", "type": "VARCHAR(10)" }
             ]
-          },
+          }
+          }'
+          ),
+          (
+            'CO-PO-PSO Mapping and Attainment Theory_CO_Attainment_Batchwise',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+          N'{
           "Theory_CO_Attainment_Batchwise": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
@@ -448,7 +490,13 @@ VALUES (
               { "name": "External_Exam_Attainment", "type": "DECIMAL(5,2)" },
               { "name": "Overall_Attainment_Level", "type": "DECIMAL(5,2)" }
             ]
-          },
+          }
+          }'),
+          (
+            'CO-PO-PSO Mapping and Attainment Practical_CO_Attainment_Batchwise',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+          N'{
           "Practical_CO_Attainment_Batchwise": {
             "columns": [
               { "name": "Sr_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
@@ -467,7 +515,13 @@ VALUES (
               { "name": "External_Attainment", "type": "DECIMAL(5,2)" },
               { "name": "Consolidated_Attainment_Level", "type": "DECIMAL(5,2)" }
             ]
-          },
+          }
+          }'),
+          (
+            'CO-PO-PSO Mapping and Attainment PO_PSO_Attainment_Summary',
+            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
+            4,
+          N'{
           "PO_PSO_Attainment_Summary": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
@@ -490,5 +544,6 @@ VALUES (
               { "name": "PSO2", "type": "DECIMAL(5,2)" },
               { "name": "PSO3", "type": "DECIMAL(5,2)" }
             ]
+          }
           }'
 );
