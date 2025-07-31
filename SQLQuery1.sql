@@ -118,7 +118,7 @@ VALUES ('Academic Calendar', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
 ('CO-PO_Coordinator', NULL, 'OBE', SYSDATETIME(), SYSDATETIME(), 1),
 ('Course File, Lab manual & Handbook Coordinator', NULL, 'Audit', SYSDATETIME(), SYSDATETIME(), 1),
 ('SoDECA & Student Coordinator', NULL, 'MOOCs and Student Data', SYSDATETIME(), SYSDATETIME(), 1),
-('Chief Batch Counselor(CBC) - CSE', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
+('SoDECA & Student Coordinator', NULL, 'MOOCs and Student Data', SYSDATETIME(), SYSDATETIME(), 1),
 ('ERP Coordinator-CSE', NULL, ' Internal', SYSDATETIME(), SYSDATETIME(), 1),
 ('ERP Coordinator-CSE(Allied)', NULL, 'Internal', SYSDATETIME(), SYSDATETIME(), 1),
 ('Events organized by department for students and faculty (Sponsored events & Non Sponsored events)', NULL, 'R & D', SYSDATETIME(), SYSDATETIME(), 1),
@@ -288,7 +288,7 @@ VALUES (
               },'
             ),
             (
-            'Sports Achievements NAAC FORMAT',
+            'Sports Achievements',
             'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
             3,
             N'{
@@ -305,12 +305,8 @@ VALUES (
             "constraints": {
               "primary_key": ["Year", "Award_Name", "Student_Name"]
             }
-          }'),
-         ('Sports Achievements QIV Format',
-            'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
-            3,
-            N'{
-            "QIV_Sports_Format": {
+          },
+          "QIV_Sports_Format": {
             "columns": [
               { "name": "Event_Title", "type": "VARCHAR(255)" },
               { "name": "Activity_Name", "type": "VARCHAR(255)" },
@@ -326,13 +322,8 @@ VALUES (
             "constraints": {
               "primary_key": ["Event_Title", "Activity_Name", "Activity_Date_From"]
             }
-            }
-          }'),
-          ('Sports Achievements NBA Format',
-            'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
-            3,
-            N'{
-            "NBA_Sports_Format": {
+          },
+          "NBA_Sports_Format": {
             "columns": [
               { "name": "Year", "type": "INT" },
               { "name": "Award_Name", "type": "VARCHAR(255)" },
@@ -343,16 +334,14 @@ VALUES (
             ],
             "constraints": {
               "primary_key": ["Year", "Award_Name", "Student_Name"]
-            }
-            }
             }'
-           ),
+            ),
             (
-            'CO-PO-PSO Mapping and Attainment Practical_Midterm_Performance',
+            'CO-PO-PSO Mapping and Attainment',
             'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
             4,
             N'{
-            "Practical_Midterm_Performance": {
+          "Practical_Midterm_Performance": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
               { "name": "RTU_Roll_Number", "type": "VARCHAR(50)", "constraints": ["NOT NULL"] },
@@ -367,14 +356,8 @@ VALUES (
               { "name": "Mapped_CO_Q1", "type": "VARCHAR(10)" },
               { "name": "Mapped_CO_Q2", "type": "VARCHAR(10)" }
             ]
-            }
-          }'),
-            (
-            'CO-PO-PSO Mapping and Attainment Practical_CO_Attainment_Sectionwise',
-            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
-            4,
-            N'{
-            "Practical_CO_Attainment_Sectionwise": {
+          },
+          "Practical_CO_Attainment_Sectionwise": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
               { "name": "Roll_No", "type": "VARCHAR(50)" },
@@ -397,14 +380,8 @@ VALUES (
               { "name": "Total_External_Marks", "type": "INT" },
               { "name": "Total_Marks", "type": "INT" }
             ]
-            }
-          }'),
-          (
-            'CO-PO-PSO Mapping and Attainment Practical_CO_Attainment_Summary',
-            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
-            4,
-            N'{
-            "Practical_CO_Attainment_Summary": {
+          },
+          "Practical_CO_Attainment_Summary": {
             "columns": [
               { "name": "Course_Code", "type": "VARCHAR(20)", "constraints": ["PRIMARY KEY"] },
               { "name": "Course_Name", "type": "VARCHAR(100)" },
@@ -415,14 +392,8 @@ VALUES (
               { "name": "Average_CO_Attainment", "type": "DECIMAL(5,2)" },
               { "name": "Consolidated_Attainment_Level", "type": "DECIMAL(5,2)" }
             ]
-            }
-          }'),
-          (
-            'CO-PO-PSO Mapping and Attainment Theory_Midterm_Attainment',
-            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
-            4,
-            N'{
-            "Theory_Midterm_Attainment": {
+          },
+          "Theory_Midterm_Attainment": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
               { "name": "Section", "type": "VARCHAR(20)" },
@@ -442,14 +413,8 @@ VALUES (
               { "name": "CO7", "type": "VARCHAR(10)" },
               { "name": "CO8", "type": "VARCHAR(10)" }
             ]
-            }
-          }'),
-          (
-            'CO-PO-PSO Mapping and Attainment Theory_CO_Attainment_Summary',
-            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
-            4,
-          N'{
-            "Theory_CO_Attainment_Summary": {
+          },
+          "Theory_CO_Attainment_Summary": {
             "columns": [
               { "name": "Course_Code", "type": "VARCHAR(20)", "constraints": ["PRIMARY KEY"] },
               { "name": "Course_Name", "type": "VARCHAR(100)" },
@@ -464,14 +429,7 @@ VALUES (
               { "name": "CO5_Percentage", "type": "DECIMAL(5,2)" },
               { "name": "CO5_Level", "type": "VARCHAR(10)" }
             ]
-          }
-          }'
-          ),
-          (
-            'CO-PO-PSO Mapping and Attainment Theory_CO_Attainment_Batchwise',
-            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
-            4,
-          N'{
+          },
           "Theory_CO_Attainment_Batchwise": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
@@ -490,13 +448,7 @@ VALUES (
               { "name": "External_Exam_Attainment", "type": "DECIMAL(5,2)" },
               { "name": "Overall_Attainment_Level", "type": "DECIMAL(5,2)" }
             ]
-          }
-          }'),
-          (
-            'CO-PO-PSO Mapping and Attainment Practical_CO_Attainment_Batchwise',
-            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
-            4,
-          N'{
+          },
           "Practical_CO_Attainment_Batchwise": {
             "columns": [
               { "name": "Sr_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
@@ -515,13 +467,7 @@ VALUES (
               { "name": "External_Attainment", "type": "DECIMAL(5,2)" },
               { "name": "Consolidated_Attainment_Level", "type": "DECIMAL(5,2)" }
             ]
-          }
-          }'),
-          (
-            'CO-PO-PSO Mapping and Attainment PO_PSO_Attainment_Summary',
-            'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
-            4,
-          N'{
+          },
           "PO_PSO_Attainment_Summary": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
@@ -544,6 +490,297 @@ VALUES (
               { "name": "PSO2", "type": "DECIMAL(5,2)" },
               { "name": "PSO3", "type": "DECIMAL(5,2)" }
             ]
-          }
           }'
 );
+
+
+select * from DOCUMENTS;
+
+USE ddr;
+SELECT * FROM DOCUMENTS;
+
+UPDATE DOCUMENTS SET title = 'Sports Achievements NAAC Format', dynamic_data =N'{
+                "NAAC_Sports_Format": {
+            "columns": [
+              { "name": "Year", "type": "INT" },
+              { "name": "Award_Name", "type": "VARCHAR(255)" },
+              { "name": "Team_Or_Individual", "type": "VARCHAR(50)" },
+              { "name": "Level", "type": "VARCHAR(50)" },
+              { "name": "Sports_Or_Cultural", "type": "VARCHAR(50)" },
+              { "name": "Student_Name", "type": "VARCHAR(100)" },
+              { "name": "Proof_Link", "type": "TEXT" }
+            ],
+            "constraints": {
+              "primary_key": ["Year", "Award_Name", "Student_Name"]
+            }
+          }' WHERE ID = 5;
+
+
+INSERT INTO DOCUMENTS (
+    title,
+    description,
+    folder_id,
+    dynamic_data
+)
+VALUES 
+
+  (
+    'Virtual_Lab_Monthly_Usage',
+    NULL,
+    35,
+    N'{
+        "Virtual_Lab_Monthly_Usage": {
+            "columns": [
+                { "name": "Usage_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "Month", "type": "VARCHAR(20)" },
+                { "name": "Workshop_Date", "type": "DATE" },
+                { "name": "Branch", "type": "VARCHAR(50)" },
+                { "name": "Year_Batch", "type": "VARCHAR(20)" },
+                { "name": "No_of_Participants", "type": "INT" },
+                { "name": "No_of_Labs_Performed", "type": "INT" },
+                { "name": "No_of_Experiments_Performed", "type": "INT" },
+                { "name": "Usage_Remark", "type": "VARCHAR(200)" }
+            ]
+        }
+    }'
+),
+(
+    'Master_Time_Table',
+    'In this folder, I will manage data for Time table  of Classes, faculties, labs and Lecture rooms.',
+    34,
+    N'{
+        "Master_Time_Table": {
+            "columns": [
+                { "name": "SN", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "Session", "type": "VARCHAR(20)" },
+                { "name": "Class", "type": "VARCHAR(50)" },
+                { "name": "Faculty", "type": "VARCHAR(100)" },
+                { "name": "Subject_Name", "type": "VARCHAR(100)" },
+                { "name": "Subject_Code", "type": "VARCHAR(20)" },
+                { "name": "Subject_Type", "type": "VARCHAR(50)" },
+                { "name": "Batch", "type": "VARCHAR(50)" }
+            ]
+        }
+    }'
+),
+(
+    'master_file_Research_centre_Records',
+    'In this folder, we will manage Research Centre Records data',
+     29,
+    N'{
+        "master_file_Research_centre_Records": {
+            "columns": [
+                { "name": "S_NO", "type": "INT", "constraints": "PRIMARY KEY NOT NULL" },
+                { "name": "TEACHER_NAME", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "QUALIFICATION_AND_YEAR", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "RECOGNIZED_AS_RESEARCH_GUIDE", "type": "VARCHAR(10)", "constraints": "NOT NULL" },
+                { "name": "YEAR_OF_RECOGNITION", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "IS_STILL_SERVING", "type": "VARCHAR(10)", "constraints": "NOT NULL" },
+                { "name": "LAST_YEAR_OF_SERVICE", "type": "INT" },
+                { "name": "SCHOLAR_NAME", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "SCHOLAR_REGISTRATION_YEAR", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "RTU_ENROLL_NO", "type": "VARCHAR(50)", "constraints": "NOT NULL" },
+                { "name": "THESIS_TITLE", "type": "TEXT", "constraints": "NOT NULL" },
+                { "name": "YEAR_OF_COMPLETION", "type": "INT", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'Remedial_List_of_Students',
+    'In this folder we are going to maintain the information such as attendance,time table ,list of student,Notice of remedial class .',
+    28,
+    N'{
+        "Remedial_List_of_Students": {
+            "columns": [
+                { "name": "SL_NO", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "ROLL_NO", "type": "VARCHAR(20)", "constraints": "PRIMARY KEY NOT NULL" },
+                { "name": "UNIVERSITY_REGISTER_NO", "type": "VARCHAR(30)", "constraints": "NOT NULL" },
+                { "name": "NAME_OF_THE_STUDENT", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "CLASS", "type": "VARCHAR(50)", "constraints": "NOT NULL" },
+                { "name": "SUBJECT", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "ACADEMIC_YEAR", "type": "VARCHAR(10)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'NAAC_Research_Projects',
+    'In this folder, detailed information related to accepted research projects as well as 
+    consultancy projects of the faculty members of Computer Science and Engineering Department will be shared.',
+    32,
+    N'{
+        "NAAC_Research_Projects": {
+            "columns": [
+                { "name": "PROJECT_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "PROJECT_NAME", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "PRINCIPAL_INVESTIGATOR", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "DEPARTMENT", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "YEAR_OF_AWARD", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "AMOUNT_SANCTIONED", "type": "DECIMAL(15,2)", "constraints": "NOT NULL" },
+                { "name": "PROJECT_DURATION", "type": "VARCHAR(50)", "constraints": "NOT NULL" },
+                { "name": "FUNDING_AGENCY", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "FUNDING_TYPE", "type": "VARCHAR(20)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'Master_table_of_Expert_Lectures',
+    'In this folder, detailed information related to the expert or guest lecturers held under any activity will be shared. The folder will have all the related
+    documents such as approval, brochure, attendance, PPTs of expert, etc.',
+    32,
+    N'{
+        "Master_table_of_Expert_Lectures": {
+            "columns": [
+                { "name": "EVENT_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "EVENT_TITLE", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "EVENT_LEVEL", "type": "VARCHAR(20)", "constraints": "NOT NULL" },
+                { "name": "SESSION_TITLE", "type": "VARCHAR(255)" },
+                { "name": "LECTURE_TITLE", "type": "VARCHAR(255)" },
+                { "name": "EXPERT_NAME", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "EXPERT_AFFILIATION", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "EVENT_DATE", "type": "DATE", "constraints": "NOT NULL" },
+                { "name": "VENUE", "type": "VARCHAR(200)", "constraints": "NOT NULL" },
+                { "name": "DURATION_DAYS", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "FUNDING_AGENCY", "type": "VARCHAR(150)" },
+                { "name": "FUNDING_TYPE", "type": "VARCHAR(20)" },
+                { "name": "AMOUNT_INR", "type": "DECIMAL(15,2)" }
+            ]
+        }
+    }'
+),
+(
+    'Master_Table_Research_Projects',
+    'In this folder, detailed information related to accepted research projects as well
+    as consultancy projects of the faculty members of
+    Computer Science and Engineering Department will be shared.',
+    32,
+    N'{
+        "Master_Table_Research_Projects": {
+            "columns": [
+                { "name": "Project_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "Faculty_Name", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "Project_Title", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "Role", "type": "VARCHAR(10)", "constraints": "NOT NULL" },
+                { "name": "External_PI_Details", "type": "VARCHAR(255)" },
+                { "name": "Collaborating_Institutions", "type": "TEXT" },
+                { "name": "Funding_Agency", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "Funding_Agency_Type", "type": "VARCHAR(20)", "constraints": "NOT NULL" },
+                { "name": "Project_Category", "type": "VARCHAR(50)", "constraints": "NOT NULL" },
+                { "name": "Project_Duration_Months", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Start_Date", "type": "DATE", "constraints": "NOT NULL" },
+                { "name": "End_Date", "type": "DATE", "constraints": "NOT NULL" },
+                { "name": "Amount_INR", "type": "DECIMAL(15,2)", "constraints": "NOT NULL" },
+                { "name": "Status", "type": "VARCHAR(20)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'NAAC_Expert_Lectures',
+    'In this folder, detailed information related to the expert or guest lecturers held under any activity will be shared. The folder will have all the related
+    documents such as approval, brochure, attendance, PPTs of expert, etc.',
+    32,
+    N'{
+        "NAAC_Expert_Lectures": {
+            "columns": [
+                { "name": "PROJECT_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "PROJECT_NAME", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "PRINCIPAL_INVESTIGATOR", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "DEPARTMENT", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "YEAR_OF_AWARD", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "AMOUNT_SANCTIONED", "type": "DECIMAL(15,2)", "constraints": "NOT NULL" },
+                { "name": "PROJECT_DURATION", "type": "VARCHAR(50)", "constraints": "NOT NULL" },
+                { "name": "FUNDING_AGENCY", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "FUNDING_TYPE", "type": "VARCHAR(20)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'NAAC_External_Project_Proposal',
+    'In this folder, detailed information related to accepted research projects as well as consultancy projects of the students 
+    of Computer Science and Engineering Department will be shared.',
+     33,
+    N'{
+        "NAAC_External_Project_Proposal": {
+            "columns": [
+                { "name": "PROJECT_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "PROJECT_NAME", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "PRINCIPAL_INVESTIGATOR", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "DEPARTMENT", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "YEAR_OF_AWARD", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "AMOUNT_SANCTIONED", "type": "DECIMAL(15,2)", "constraints": "NOT NULL" },
+                { "name": "PROJECT_DURATION", "type": "VARCHAR(50)", "constraints": "NOT NULL" },
+                { "name": "FUNDING_AGENCY", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "FUNDING_TYPE", "type": "VARCHAR(20)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'Master_table_of_External_project_proposal',
+    'In this folder, detailed information related to accepted research projects as well as consultancy projects of the students 
+    of Computer Science and Engineering Department will be shared.',
+    33,
+    N'{
+        "Master_table_of_External_project_proposal": {
+            "columns": [
+                { "name": "DETAIL_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "PROJECT_ID", "type": "INT", "constraints": "NOT NULL, FOREIGN KEY REFERENCES NAAC_External_Project_Proposal(PROJECT_ID)" },
+                { "name": "PROJECT_NAME", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "NAME_OF_SUMIT", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "ROLE", "type": "VARCHAR(10)", "constraints": "NOT NULL" },
+                { "name": "EXTERNAL_PI_NAME_AFFILIATION", "type": "VARCHAR(255)" },
+                { "name": "COLLABORATING_INSTITUTIONS", "type": "TEXT" },
+                { "name": "FUNDING_AGENCY", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "FUNDING_TYPE", "type": "VARCHAR(20)", "constraints": "NOT NULL" },
+                { "name": "CATEGORY", "type": "VARCHAR(50)", "constraints": "NOT NULL" },
+                { "name": "DURATION_MONTHS", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "START_DATE", "type": "DATE", "constraints": "NOT NULL" },
+                { "name": "END_DATE", "type": "DATE", "constraints": "NOT NULL" },
+                { "name": "AMOUNT_INR", "type": "DECIMAL(15,2)", "constraints": "NOT NULL" },
+                { "name": "STATUS", "type": "VARCHAR(20)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'NAAC_Student_Internship',
+    'In this folder, we will manage final year student project list, Mentor approval letters, various sample like Abstract, form-1, form-2, form-3, 
+    ,SRS, PPT, Project Report, Demo Video etc.',
+    33,
+    N'{
+        "NAAC_Student_Internship": {
+            "columns": [
+                { "name": "INTERNSHIP_ID", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "PROGRAM_NAME", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "PROGRAM_CODE", "type": "VARCHAR(50)" },
+                { "name": "ROLL_NUMBER", "type": "VARCHAR(50)", "constraints": "NOT NULL UNIQUE" },
+                { "name": "STUDENT_NAME", "type": "VARCHAR(150)", "constraints": "NOT NULL" },
+                { "name": "FIRM_NAME_ADDRESS", "type": "TEXT", "constraints": "NOT NULL" },
+                { "name": "START_DATE", "type": "DATE", "constraints": "NOT NULL" },
+                { "name": "END_DATE", "type": "DATE", "constraints": "NOT NULL" },
+                { "name": "GOOGLE_DRIVE_LINK", "type": "TEXT" }
+            ]
+        }
+    }'
+),
+(
+    'Master_Table_of_Student_Internship',
+    'In this folder, we will manage final year student project list, Mentor approval letters, various sample like Abstract, form-1, form-2, form-3, 
+    ,SRS, PPT, Project Report, Demo Video etc.',
+    33,
+    N'{
+        "Master_Table_of_Student_Internship": {
+            "columns": [
+                { "name": "SNO", "type": "INT", "constraints": "PRIMARY KEY IDENTITY(1,1)" },
+                { "name": "ROLL_NUMBER", "type": "VARCHAR(50)", "constraints": "NOT NULL, FOREIGN KEY REFERENCES NAAC_Student_Internship(ROLL_NUMBER)" },
+                { "name": "STUDENT_NAME", "type": "VARCHAR(100)" },
+                { "name": "PROJECT_TITLE", "type": "VARCHAR(200)" },
+                { "name": "PROJECT_MENTOR", "type": "VARCHAR(100)" }
+            ]
+        }
+    }'
+)
