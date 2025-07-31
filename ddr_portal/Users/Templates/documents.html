@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Documents in {{ folder.folder_name }}</title>
+</head>
+<body>
+  <h2>Documents in Folder: {{ folder.folder_name }}</h2>
+  <ul>
+    {% for doc in documents %}
+      <li>📄 {{ doc.title }}</li>
+    {% empty %}
+      <li>No documents found in this folder.</li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'folder_list' %}">🔙 Back to Folders</a>
+</body>
+</html>

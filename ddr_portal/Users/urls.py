@@ -11,5 +11,7 @@ urlpatterns = [
 path('head/', views.head_view, name='head'),
 path('faculty/', views.faculty_view, name='faculty'),
     path('role_redirect/', views.role_redirect, name='role_redirect'),
+    path('folders/', views.folder_list, name='folder_list'),
+    path('folders/<int:folder_id>/', views.folder_documents, name='folder_documents'),
 ]
 
