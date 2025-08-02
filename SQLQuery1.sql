@@ -752,6 +752,186 @@ VALUES (
             ]
         }
     }'
+),
+(
+    'UG_Higher_Studies',
+    'NULL',
+    23,
+    N'{
+        "UG_Higher_Studies": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Dept", "type": "VARCHAR(200)", "constraints": "NOT NULL" },
+                { "name": "Session", "type": "VARCHAR(200)", "constraints": "NOT NULL" },
+                { "name": "No_of_Students", "type": "INT", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+ ),
+ (
+    'PG_Higher_Studies',
+    'NULL',
+    23,
+    N'{
+        "PG_Higher_Studies": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Dept", "type": "VARCHAR(200)", "constraints": "NOT NULL" },
+                { "name": "Session", "type": "VARCHAR(200)", "constraints": "NOT NULL" },
+                { "name": "No_of_Students", "type": "INT", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'Patents',
+    'NULL',
+    23,
+    N'{
+        "Patents": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Deptartment", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "Calendar_Year", "type": "YEAR", "constraints": "NOT NULL" },
+                { "name": "Number_of_Published", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Number_of_Granted", "type": "INT", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'Sponsored_Research_Detail',
+    'NULL',
+    23,
+    N'{
+        "Sponsored_Research_Detail": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Dept", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "Financial_Year", "type": "VARCHAR(9)", "constraints": "NOT NULL" },
+                { "name": "Number_of_Projects", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Number_of_Funding_Agencies", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Amount_Received_Rs", "type": "DECIMAL(15,2)", "constraints": "NOT NULL" },
+                { "name": "Amount_in_Words", "type": "VARCHAR(255)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),(
+    'Consultancy_Projects_Details',
+    'NULL',
+    23,
+    N'{
+        "Consultancy_Projects_Details": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Dept", "type": "VARCHAR(100)", "constraints": "NOT NULL" },
+                { "name": "Financial_Year", "type": "VARCHAR(9)", "constraints": "NOT NULL" },
+                { "name": "Number_of_Projects", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Number_of_Client_Originations", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Amount_Received_Rs", "type": "DECIMAL(15,2)", "constraints": "NOT NULL" },
+                { "name": "Amount_in_Words", "type": "VARCHAR(255)", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'ERP_Total_Student_Strength',
+    'NULL',
+    23,
+    N'{
+        "ERP_Total_Student_Strength": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Program", "type": "VARCHAR(255)", "constraints": "NOT NULL" },
+                { "name": "Male_Students", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Female_Students", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Total_Students", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Within_State", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Outside_State", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Outside_Country", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Economically_Backward", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Socially_Challenged", "type": "INT", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'ERP_PhD_Student_Strength_Doctoral_Program',
+    'NULL',
+    23,
+    N'{
+        "ERP_PhD_Student_Strength_Doctoral_Program": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Program_Year", "type": "VARCHAR(20)", "constraints": "NOT NULL" },
+                { "name": "Full_Time_Students", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Part_Time_Students", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Total_Students", "type": "INT", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'PhD_Student_Strength',
+    'NULL',
+    23,
+    N'{
+        "PhD_Student_Strength": {
+            "columns": [
+                { "name": "ID", "type": "INT", "constraints": "AUTO_INCREMENT PRIMARY KEY" },
+                { "name": "Program_Year", "type": "VARCHAR(20)", "constraints": "NOT NULL" },
+                { "name": "Full_Time_Students", "type": "INT", "constraints": "NOT NULL" },
+                { "name": "Part_Time_Students", "type": "INT", "constraints": "NOT NULL" }
+            ]
+        }
+    }'
+),
+(
+    'Placement_UG_4_Year_Program',
+    'NULL',
+    23,
+    N'{
+        "Placement_UG_4_Year_Program": {
+            "columns": [
+                { "name": "Academic_Year_Intake", "type": "VARCHAR(9)", "constraints": "" },
+                { "name": "First_Year_Intake", "type": "INT", "constraints": "" },
+                { "name": "First_Year_Admitted", "type": "INT", "constraints": "" },
+
+                { "name": "Academic_Year_Lateral_Entry", "type": "VARCHAR(9)", "constraints": "" },
+                { "name": "Lateral_Entry_Admitted", "type": "INT", "constraints": "" },
+
+                { "name": "Academic_Year_Graduated", "type": "VARCHAR(9)", "constraints": "" },
+                { "name": "Graduated_In_Time", "type": "INT", "constraints": "" },
+
+                { "name": "Students_Placed", "type": "INT", "constraints": "" },
+                { "name": "Median_Salary_Rs", "type": "DECIMAL(12,2)", "constraints": "" },
+                { "name": "Median_Salary_Words", "type": "VARCHAR(100)", "constraints": "" },
+                { "name": "Higher_Studies_Count", "type": "INT", "constraints": "" }
+            ]
+        }
+    }'
+),
+(
+    'PG_2_Year_Program',
+    'NULL',
+    23,
+    N'{
+        "PG_2_Year_Program": {
+            "columns": [
+                { "name": "Academic_Year", "type": "VARCHAR(9)", "constraints": "" },
+                { "name": "First_Year_Intake", "type": "INT", "constraints": "" },
+                { "name": "First_Year_Admitted", "type": "INT", "constraints": "" },
+
+                { "name": "Academic_Year_Graduated", "type": "VARCHAR(9)", "constraints": "" },
+                { "name": "Graduated_In_Time", "type": "INT", "constraints": "" },
+
+                { "name": "Students_Placed", "type": "INT", "constraints": "" },
+                { "name": "Median_Salary_Rs", "type": "DECIMAL(12,2)", "constraints": "" },
+                { "name": "Median_Salary_Words", "type": "VARCHAR(100)", "constraints": "" },
+                { "name": "Higher_Studies_Count", "type": "INT", "constraints": "" }
+            ]
+        }
+    }'
 );
 
 
