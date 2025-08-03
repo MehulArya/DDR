@@ -855,7 +855,6 @@ VALUES (
             ]
           }
         }'
-          }'
 ),
 
   (
@@ -1297,7 +1296,7 @@ VALUES (
             ]
         }
     }'
-);
+),
 (
     'Oracle_nimish',
     'In this folder, we will manage Memorandum of understanding (MoU) with Oracle.',
