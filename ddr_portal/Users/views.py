@@ -4,6 +4,8 @@ from django.contrib.auth import login, authenticate, logout
 from .forms import CustomUserCreationForm, CustomLoginForm
 from django.contrib.auth.decorators import login_required
 from django.db import connection
+from django.shortcuts import render, get_object_or_404
+from .models import Folder, Document
 
 def signup_view(request):
     if request.method == 'POST':
@@ -66,3 +68,17 @@ def role_redirect(request):
             return redirect('faculty')   # goes to path('Faculty/', ...)
     
     return redirect('login')  # fallback
+
+
+def folder_list(request):
+    folders = Folder.objects.filter(is_active=True)
+    return render(request, 'folder_list.html', {'folders': folders})
+
+# View to show documents inside a folder
+def folder_documents(request, folder_id):
+    folder = get_object_or_404(Folder, id=folder_id)
+    documents = Document.objects.filter(folder_id=folder.id)
+    return render(request, 'documents.html', {
+        'folder': folder,
+        'documents': documents
+    })

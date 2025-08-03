@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document Folders | Admin Dashboard</title>
+  <link rel="stylesheet" href="{% static 'CSS/folder_list.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 20px 40px;
+      text-align: left;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 25px;
+      font-size: 22px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    ul.folder-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul.folder-list li {
+      padding: 12px 20px;
+      border: 1px solid #ddd;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      transition: all 0.2s ease-in-out;
+      display: flex;
+      align-items: center;
+      font-size: 17px;
+    }
+
+    ul.folder-list li:hover {
+      background-color: #e6f0ff;
+      border-color: #aac9ff;
+    }
+
+    ul.folder-list li a {
+      color: #003366;
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    ul.folder-list li a:hover {
+      text-decoration: underline;
+    }
+
+    .icon {
+      font-size: 20px;
+    }
+
+    .empty-message {
+      color: #888;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard - Document Folders</h1>
+  </header>
+
+  <div class="container">
+    <h2>Available Folders</h2>
+    <ul class="folder-list">
+      {% for folder in folders %}
+        <li>
+          <span class="icon">📁</span>
+          <a href="{% url 'folder_documents' folder.id %}">{{ folder.folder_name }}</a>
+        </li>
+      {% empty %}
+        <li class="empty-message">No folders available.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>
