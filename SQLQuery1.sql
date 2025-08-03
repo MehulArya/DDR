@@ -131,7 +131,6 @@ VALUES ('Academic Calendar', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
 ('Infosys Springboard & IBM Skills Build', NULL, 'Internal', SYSDATETIME(), SYSDATETIME(), 1),
 ('IOT Center of Excellence Coordinator', NULL, 'R & D', SYSDATETIME(), SYSDATETIME(), 1),
 ('Member - Red Cross Club', NULL, 'External', SYSDATETIME(), SYSDATETIME(), 1),
-('Faculty & Staff Basic Details/Higher studies', NULL, ' Audit', SYSDATETIME(), SYSDATETIME(), 1),
 ('MoUs', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
 ('NAAC & Institute Ranking', NULL, 'Audit', SYSDATETIME(), SYSDATETIME(), 1),
 ('NIRF Data Format', NULL, 'External', SYSDATETIME(), SYSDATETIME(), 1),
@@ -288,7 +287,7 @@ VALUES (
               },'
             ),
             (
-            'Sports Achievements NAAC FORMAT',
+            'Sports Achievements NAAC Format',
             'Number of awards/medals for outstanding performance in sports at university/state/national / international level (award for a team event should be counted as one) during the year.',
             3,
             N'{
@@ -522,7 +521,7 @@ VALUES (
             'In this folder, we will manage Session wise / Batch-wise Course Mappings and Attainments of CO-PO and PSO',
             4,
           N'{
-          "PO_PSO_Attainment_Summary": {
+            "PO_PSO_Attainment_Summary": {
             "columns": [
               { "name": "S_No", "type": "INT", "constraints": ["PRIMARY KEY"] },
               { "name": "Course_Code", "type": "VARCHAR(20)" },
@@ -546,4 +545,314 @@ VALUES (
             ]
           }
           }'
+),
+        ('Course File',
+                'The course file will be reviewed on the basis of the availability of following documents (as listed in Table1) in the said sequence only.',
+                5,
+               N'{
+            "Course_File": {
+            "columns": [
+              { "name": "Institute_Vision_Mission_Quality_Policy", "type": "TEXT" },
+              { "name": "Department_Vision_Mission", "type": "TEXT" },
+              { "name": "RTU_Scheme_Syllabus", "type": "TEXT" },
+              { "name": "Prerequisite_of_Course", "type": "TEXT" },
+              { "name": "List_of_Text_and_Reference_Books", "type": "TEXT" },
+              { "name": "Time_Table", "type": "TEXT" },
+              { "name": "Syllabus_Deployment_Course_Plan", "type": "TEXT" },
+              { "name": "Coverage", "type": "TEXT" },
+              { "name": "PO_PSO_Indicators_Competency", "type": "TEXT" },
+              { "name": "COs_Competency_Level_1", "type": "TEXT" },
+              { "name": "CO_PO_PSO_Mapping_Using_Performance_Indicators_PIs", "type": "TEXT" },
+              { "name": "CO_PO_PSO_Mapping_Formula_Justification", "type": "TEXT" },
+              { "name": "Attainment_Level_Internal_Assessment", "type": "TEXT" },
+              { "name": "Learning_Level_Students_Through_Marks_1st_Test_Quiz", "type": "TEXT" },
+              { "name": "Planning_Remedial_Classes_Below_Average_Students", "type": "TEXT" },
+              { "name": "Teaching_Learning_Methodology", "type": "TEXT" },
+              { "name": "RTU_Papers_Previous_Years", "type": "TEXT" },
+              { "name": "Mid_Term_Papers_Blooms_Taxonomy_COs", "type": "TEXT" },
+              { "name": "Tutorial_Sheets_WITH_EMD_Analysis", "type": "TEXT" },
+              { "name": "Technical_Quiz_Papers", "type": "TEXT" },
+              { "name": "Assignments_RTU_Format", "type": "TEXT" },
+              { "name": "Efforts_to_Fill_Gap_Between_COs_and_POs", "type": "TEXT" },
+              { "name": "Lecture_Notes", "type": "TEXT" }
+            ]
+          }
+        }'),
+        ('Handbook',
+                'The faculty handbooks will be reviewed on the basis of the availability of following documents.',
+                5,
+               N'{
+            "Handbook": {
+            "columns": [
+              { "name": "Institute_Vision_Mission_Quality_Policy", "type": "TEXT" },
+              { "name": "Department_Vision_Mission", "type": "TEXT" },
+              { "name": "PEO_PO_PSO", "type": "TEXT" },
+              { "name": "Time_Table", "type": "TEXT" },
+              { "name": "RTU_Syllabus", "type": "TEXT" },
+              { "name": "Syllabus_Deployment_Course_Plan", "type": "TEXT" },
+              { "name": "Course_Coverage", "type": "TEXT" },
+              { "name": "Student_Details", "type": "TEXT" },
+              { "name": "Attendance_Mark_Properly", "type": "TEXT" },
+              { "name": "Listing_Total_Students_Present_Absent_Total", "type": "TEXT" },
+              { "name": "List_of_Text_and_Reference_Books", "type": "TEXT" }
+            ]
+          }
+        }'
+        ),
+        ('SODECA NAAC Format - 1',
+                'Number of awards/medals for outstanding performance in sports/cultural activities at university/state/national / international level (award for a team event should be counted as one) during the year.',
+                7,
+               N'{
+          "Naac_format_DECA_1": {
+            "columns": [
+              { "name": "Year_", "type": "YEAR" },
+              { "name": "Name_of_the_award_or_medal", "type": "VARCHAR(30)" },
+              { "name": "Team_or_Individual", "type": "ENUM", "values": ["Team", "Individual"] },
+              { "name": "level", "type": "ENUM", "values": ["University", "State", "National", "International"] },
+              { "name": "sports_or_cultural", "type": "ENUM", "values": ["sports", "cultural"] },
+              { "name": "Student_name", "type": "VARCHAR(50)" },
+              { "name": "Proof_link", "type": "VARCHAR(80)" }
+            ]
+          }
+        }'
+        ),
+        ('SODECA NAAC Format - 2',
+                'Average number of sports,technical and cultural activities/events in which students of the Institution participated during this year (organised by the institution/other institutions) (20)',
+                7,
+               N'{
+          "NAAC_format_DECA_2": {
+            "columns": [
+              { "name": "Date_of_event", "type": "DATE" },
+              { "name": "Name_of_event", "type": "VARCHAR(30)" },
+              { "name": "Roll_no", "type": "VARCHAR(20)" },
+              { "name": "Name_of_student_participated", "type": "VARCHAR(30)" },
+              { "name": "Link_of_proof", "type": "VARCHAR(50)" }
+            ]
+          }
+        }'
+        ),
+        ('SODECA QIV Format - 1',
+                'Number of awards/medals for outstanding performance in sports/cultural activities at university/state/national / international level (award for a team event should be counted as one) during the year.',
+                7,
+               N'{
+          "QIV_format_DECA_1": {
+            "columns": [
+              { "name": "Title_of_event", "type": "VARCHAR(50)" },
+              { "name": "Name_of_activity", "type": "VARCHAR(50)" },
+              { "name": "Type_", "type": "ENUM('Faculty', 'Student')" },
+              { "name": "Awarding_Organization", "type": "VARCHAR(50)" },
+              { "name": "level_", "type": "ENUM('International', 'National')" },
+              { "name": "Date_to", "type": "DATE" },
+              { "name": "Date_from", "type": "DATE" },
+              { "name": "No_of_members_in_team", "type": "INT" },
+              { "name": "Position", "type": "INT" },
+              { "name": "Proof_enclosed", "type": "ENUM('Yes', 'No')" }
+            ]
+          }
+        }'
+        ),
+        ('SODECA QIV Format - 2',
+                'Average number of sports,technical and cultural activities/events in which students of the Institution participated during this year (organised by the institution/other institutions) (20)',
+                7,
+               N'{
+          "QIV_format_DECA_2": {
+            "columns": [
+              { "name": "Title_of_event", "type": "VARCHAR(50)" },
+              { "name": "Choose_", "type": "ENUM('Faculty', 'Student', 'Coordinator')" },
+              { "name": "Name_of_faculty_or_Student_Coordinator", "type": "VARCHAR(30)" },
+              { "name": "Awarding_Organization", "type": "VARCHAR(50)" },
+              { "name": "level_", "type": "ENUM('International', 'National')" },
+              { "name": "Type_", "type": "ENUM('Curricular', 'Co-curricular')" },
+              { "name": "Date_to", "type": "DATE" },
+              { "name": "Date_from", "type": "DATE" },
+              { "name": "Position", "type": "INT" },
+              { "name": "Department", "type": "VARCHAR(30)" },
+              { "name": "Proof_enclosed", "type": "ENUM('Yes', 'No')" }
+            ]
+          }
+        }'
+        ),
+        ('SODECA NBA Format',
+                'Number of awards/medals for outstanding performance in sports/cultural activities at university/state/national / international level (award for a team event should be counted as one) during the year.',
+                7,
+               N'{
+          "NBA_format_DECA": {
+            "columns": [
+              { "name": "Session_", "type": "VARCHAR(20)" },
+              { "name": "Name_of_student_or_team_members", "type": "VARCHAR(80)" },
+              { "name": "Name_of_award", "type": "VARCHAR(30)" },
+              { "name": "Event_date_to", "type": "DATE" },
+              { "name": "Event_date_from", "type": "DATE" },
+              { "name": "Event_Name", "type": "VARCHAR(60)" },
+              { "name": "Event_Venue", "type": "VARCHAR(90)" },
+              { "name": "level_", "type": "ENUM('International', 'National', 'State', 'College_level')" },
+              { "name": "Category", "type": "VARCHAR(60)" },
+              { "name": "Proof_link", "type": "VARCHAR(90)" }
+            ]
+          }
+        }'
+        ),
+        ('SODECA NIRF Format',
+                'NULL',
+                7,
+               N'{
+          "NIRF_format_DECA": {
+            "columns": [
+              { "name": "Dept", "type": "VARCHAR(20)" },
+              { "name": "S_No", "type": "INT", "constraints": ["AUTO_INCREMENT", "PRIMARY KEY"] },
+              { "name": "Enrollment_Number", "type": "INT" },
+              { "name": "Name_of_the_award", "type": "VARCHAR(40)" },
+              { "name": "Name_of_International_institution", "type": "VARCHAR(50)" },
+              { "name": "Address_of_the_Agency_giving_award", "type": "VARCHAR(90)" },
+              { "name": "Contact_Email_ID_of_the_institution", "type": "VARCHAR(60)" },
+              { "name": "Year_of_receiving_award", "type": "YEAR" },
+              { "name": "Email_ID_of_the_Student", "type": "VARCHAR(50)" },
+              { "name": "Contact_no_of_the_Student", "type": "CHAR(10)" }
+            ]
+          }
+        }'
+        ),
+        ('Events Organized ',
+                'In this folder, we will manage data which is relevant to events like workshop, FDP, Conference, Seminar, etc Organized for Faculty and Students.',
+                10,
+               N'{
+          "Naac_Format_event_organized": {
+            "columns": [
+              { "name": "sn", "type": "INT", "constraints": ["AUTO_INCREMENT", "PRIMARY KEY"] },
+              { "name": "from_date", "type": "DATE" },
+              { "name": "to_date", "type": "DATE" },
+              { "name": "Title_of_the_professional_development_program_organised_for_teaching_staff", "type": "VARCHAR(255)" },
+              { "name": "Title_of_the_administrative_training_program_organised_for_non_teaching_staff", "type": "VARCHAR(255)" },
+              { "name": "Total_no._of_participants_Teaching_or_Non_teaching", "type": "INT" },
+              { "name": "Link_to_the_report_of_the_Program", "type": "TEXT" },
+              { "name": "Link_to_the_list_of_participant_with_Employee_code", "type": "TEXT" }
+            ]
+          }
+        }'
+        ),
+        ('Events Organized ',
+                'In this folder, we will manage data which is relevant to events like workshop, FDP, Conference, Seminar, etc Organized for Faculty and Students.',
+                10,
+               N'{
+          "event_master_table": {
+            "columns": [
+              { "name": "sr_no", "type": "INT", "constraints": ["PRIMARY KEY"] },
+              { "name": "start_date_of_event", "type": "DATE" },
+              { "name": "end_date_of_event", "type": "DATE" },
+              { "name": "dates_from_to", "type": "VARCHAR(100)" },
+              { "name": "name_of_faculty_coordinator", "type": "VARCHAR(200)" },
+              { "name": "title_of_the_professional_development_event_for_students", "type": "VARCHAR(200)" },
+              { "name": "title_of_the_administrative_training_program_for_teaching_staff", "type": "VARCHAR(200)" },
+              { "name": "Title_of_the_administrative_training_program_Title_of_the_administrative_training_program_for_non_teaching_staff", "type": "VARCHAR(200)" },
+              { "name": "no_of_participants", "type": "INT" },
+              { "name": "Academic_Departmentor_Cell_or_Committees", "type": "VARCHAR(150)" },
+              { "name": "academic_session", "type": "VARCHAR(100)" },
+              { "name": "collaboration_details", "type": "TEXT" },
+              { "name": "grant_received_YES_NO", "type": "ENUM('YES', 'NO')" },
+              { "name": "grant_details", "type": "TEXT" },
+              { "name": "association_with_professional_societies_for_organization_of_event", "type": "TEXT" },
+              { "name": "no_of_skit_students_participated", "type": "INT" },
+              { "name": "no_of_staff_skit_members_participated", "type": "INT" },
+              { "name": "event_report_attached_in_proper_format_YES_NO", "type": "ENUM('YES', 'NO')" },
+              { "name": "link_to_the_activity_report", "type": "VARCHAR(300)" },
+              { "name": "any_other_remarks", "type": "TEXT" },
+              { "name": "date_format", "type": "VARCHAR(20)" },
+              { "name": "program_for_students", "type": "BOOLEAN" },
+              { "name": "program_for_teaching_staff", "type": "BOOLEAN" },
+              { "name": "program_for_non_teaching_staff", "type": "BOOLEAN" },
+              { "name": "labs_or_coe", "type": "VARCHAR(150)" },
+              { "name": "organization_of_event_details", "type": "TEXT" },
+              { "name": "student_list_attached", "type": "TEXT" },
+              { "name": "staff_list_attached", "type": "TEXT" },
+              { "name": "report_format_verified_YES_NO", "type": "ENUM('YES', 'NO')" },
+              { "name": "report_on_website_link", "type": "VARCHAR(300)" }
+            ]
+          }
+        }'
+        ),
+        ('Result Analysis',
+                'In this folder, we will manage the result analysis of CSE, AI,DS and IoT',
+                11,
+               N'{
+          "nirf_result_analysis": {
+            "columns": [
+              { "name": "academic_year", "type": "VARCHAR(9)" },
+              { "name": "No._of_first_year_students_intake_in_the_year", "type": "INT" },
+              { "name": "No._of_first_year_students_admitted_in_the_year", "type": "INT" },
+              { "name": "Academic_Year", "type": "INT" },
+              { "name": "No._of_students_admitted_through_lateral_entry", "type": "INT" },
+              { "name": "No._of_student_graduating_in_minimum_stipulated_time", "type": "INT" },
+              { "name": "No._of_students_places", "type": "INT" },
+              { "name": "Median_salary_of_placed_graduates_per_annum_Amount_in_Rs", "type": "DECIMAL(10, 2)" },
+              { "name": "Median_salary_of_placed_graduates_per_annum_Amount_in_Words", "type": "VARCHAR(255)" },
+              { "name": "No._of_students_selected_for_Higher_Studies", "type": "INT" }
+            ]
+          }
+        }'
+        ),
+        ('Result Analysis',
+                'In this folder, we will manage the result analysis of CSE, AI,DS and IoT',
+                11,
+               N'{
+          "qiv_result_analysis": {
+            "columns": [
+              { "name": "sn", "type": "INT", "attributes": ["AUTO_INCREMENT", "PRIMARY KEY"] },
+              { "name": "University_Roll_no", "type": "VARCHAR(50)" },
+              { "name": "Student_name", "type": "VARCHAR(255)" },
+              { "name": "Branch", "type": "VARCHAR(100)" },
+              { "name": "Percentage", "type": "DECIMAL(5,2)" },
+              { "name": "Result", "type": "VARCHAR(50)" }
+            ]
+          }
+        }'
+        ),
+        ('Result Analysis',
+                'In this folder, we will manage the result analysis of CSE, AI,DS and IoT',
+                11,
+               N'{
+          "qiv_result_analysis": {
+            "columns": [
+              { "name": "sn", "type": "INT", "attributes": ["AUTO_INCREMENT", "PRIMARY KEY"] },
+              { "name": "University_Roll_no", "type": "VARCHAR(50)" },
+              { "name": "Student_name", "type": "VARCHAR(255)" },
+              { "name": "Branch", "type": "VARCHAR(100)" },
+              { "name": "Percentage", "type": "DECIMAL(5,2)" },
+              { "name": "Result", "type": "VARCHAR(50)" }
+            ]
+          }
+        }'
+        ),
+        ('External Examination Coordinator',
+                'In this folder, we will manage External Examination Records data',
+                12,
+               N'{
+          "external_examination_records_master": {
+            "columns": [
+              { "name": "sr_no", "type": "INT", "attributes": ["PRIMARY KEY"] },
+              { "name": "Date_of_Exam", "type": "DATE" },
+              { "name": "Name_of_Lab", "type": "VARCHAR(100)" },
+              { "name": "External_Examiner_no", "type": "VARCHAR(50)" },
+              { "name": "Name_of_External_Examiner", "type": "VARCHAR(100)" },
+              { "name": "Name_of_Internal_Examiner", "type": "VARCHAR(100)" },
+              { "name": "No_of_Students_to_be_Examined", "type": "INT" }
+            ]
+          }
+        }'
+        ),
+        ('External Examination Coordinator',
+                'In this folder, we will manage External Examination Records data',
+                12,
+               N'{
+          "external_examination_records_master": {
+            "columns": [
+              { "name": "Sr_No.", "type": "INT", "attributes": ["PRIMARY KEY"] },
+              { "name": "Date_of_Exam", "type": "DATE" },
+              { "name": "Name_of_Lab", "type": "VARCHAR(100)" },
+              { "name": "External_Examiner_no", "type": "VARCHAR(50)" },
+              { "name": "Name_of_External_Examiner", "type": "VARCHAR(100)" },
+              { "name": "Name_of_Internal_Examiner", "type": "VARCHAR(100)" },
+              { "name": "No_of_Students_to_be_Examined", "type": "INT" }
+            ]
+          }
+        }'
 );
