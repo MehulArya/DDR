@@ -1,7 +1,3 @@
--- Create database
-CREATE DATABASE ddr;
-GO
-
 -- Switch to database
 USE ddr;
 GO
@@ -635,62 +631,62 @@ VALUES (
                 'Number of awards/medals for outstanding performance in sports/cultural activities at university/state/national / international level (award for a team event should be counted as one) during the year.',
                 7,
                N'{
-          "QIV_format_DECA_1": {
-            "columns": [
-              { "name": "Title_of_event", "type": "VARCHAR(50)" },
-              { "name": "Name_of_activity", "type": "VARCHAR(50)" },
-              { "name": "Type_", "type": "ENUM('Faculty', 'Student')" },
-              { "name": "Awarding_Organization", "type": "VARCHAR(50)" },
-              { "name": "level_", "type": "ENUM('International', 'National')" },
-              { "name": "Date_to", "type": "DATE" },
-              { "name": "Date_from", "type": "DATE" },
-              { "name": "No_of_members_in_team", "type": "INT" },
-              { "name": "Position", "type": "INT" },
-              { "name": "Proof_enclosed", "type": "ENUM('Yes', 'No')" }
-            ]
-          }
-        }'
+  "QIV_format_DECA_1": {
+    "columns": [
+      { "name": "Title_of_event", "type": "VARCHAR(50)" },
+      { "name": "Name_of_activity", "type": "VARCHAR(50)" },
+      { "name": "Type_", "type": "ENUM", "values": ["Faculty", "Student"] },
+      { "name": "Awarding_Organization", "type": "VARCHAR(50)" },
+      { "name": "level_", "type": "ENUM", "values": ["International", "National"] },
+      { "name": "Date_to", "type": "DATE" },
+      { "name": "Date_from", "type": "DATE" },
+      { "name": "No_of_members_in_team", "type": "INT" },
+      { "name": "Position", "type": "INT" },
+      { "name": "Proof_enclosed", "type": "ENUM", "values": ["Yes", "No"] }
+    ]
+  }
+}'
         ),
         ('SODECA QIV Format - 2',
                 'Average number of sports,technical and cultural activities/events in which students of the Institution participated during this year (organised by the institution/other institutions) (20)',
                 7,
                N'{
-          "QIV_format_DECA_2": {
-            "columns": [
-              { "name": "Title_of_event", "type": "VARCHAR(50)" },
-              { "name": "Choose_", "type": "ENUM('Faculty', 'Student', 'Coordinator')" },
-              { "name": "Name_of_faculty_or_Student_Coordinator", "type": "VARCHAR(30)" },
-              { "name": "Awarding_Organization", "type": "VARCHAR(50)" },
-              { "name": "level_", "type": "ENUM('International', 'National')" },
-              { "name": "Type_", "type": "ENUM('Curricular', 'Co-curricular')" },
-              { "name": "Date_to", "type": "DATE" },
-              { "name": "Date_from", "type": "DATE" },
-              { "name": "Position", "type": "INT" },
-              { "name": "Department", "type": "VARCHAR(30)" },
-              { "name": "Proof_enclosed", "type": "ENUM('Yes', 'No')" }
-            ]
-          }
-        }'
+  "QIV_format_DECA_2": {
+    "columns": [
+      { "name": "Title_of_event", "type": "VARCHAR(50)" },
+      { "name": "Choose_", "type": "ENUM", "values": ["Faculty", "Student", "Coordinator"] },
+      { "name": "Name_of_faculty_or_Student_Coordinator", "type": "VARCHAR(30)" },
+      { "name": "Awarding_Organization", "type": "VARCHAR(50)" },
+      { "name": "level_", "type": "ENUM", "values": ["International", "National"] },
+      { "name": "Type_", "type": "ENUM", "values": ["Curricular", "Co-curricular"] },
+      { "name": "Date_to", "type": "DATE" },
+      { "name": "Date_from", "type": "DATE" },
+      { "name": "Position", "type": "INT" },
+      { "name": "Department", "type": "VARCHAR(30)" },
+      { "name": "Proof_enclosed", "type": "ENUM", "values": ["Yes", "No"] }
+    ]
+  }
+}'
         ),
         ('SODECA NBA Format',
                 'Number of awards/medals for outstanding performance in sports/cultural activities at university/state/national / international level (award for a team event should be counted as one) during the year.',
                 7,
                N'{
-          "NBA_format_DECA": {
-            "columns": [
-              { "name": "Session_", "type": "VARCHAR(20)" },
-              { "name": "Name_of_student_or_team_members", "type": "VARCHAR(80)" },
-              { "name": "Name_of_award", "type": "VARCHAR(30)" },
-              { "name": "Event_date_to", "type": "DATE" },
-              { "name": "Event_date_from", "type": "DATE" },
-              { "name": "Event_Name", "type": "VARCHAR(60)" },
-              { "name": "Event_Venue", "type": "VARCHAR(90)" },
-              { "name": "level_", "type": "ENUM('International', 'National', 'State', 'College_level')" },
-              { "name": "Category", "type": "VARCHAR(60)" },
-              { "name": "Proof_link", "type": "VARCHAR(90)" }
-            ]
-          }
-        }'
+  "NBA_format_DECA": {
+    "columns": [
+      { "name": "Session_", "type": "VARCHAR(20)" },
+      { "name": "Name_of_student_or_team_members", "type": "VARCHAR(80)" },
+      { "name": "Name_of_award", "type": "VARCHAR(30)" },
+      { "name": "Event_date_to", "type": "DATE" },
+      { "name": "Event_date_from", "type": "DATE" },
+      { "name": "Event_Name", "type": "VARCHAR(60)" },
+      { "name": "Event_Venue", "type": "VARCHAR(90)" },
+      { "name": "level_", "type": "ENUM(''International'', ''National'', ''State'', ''College_level'')" },
+      { "name": "Category", "type": "VARCHAR(60)" },
+      { "name": "Proof_link", "type": "VARCHAR(90)" }
+    ]
+  }
+}'
         ),
         ('SODECA NIRF Format',
                 'NULL',
@@ -734,42 +730,22 @@ VALUES (
                 'In this folder, we will manage data which is relevant to events like workshop, FDP, Conference, Seminar, etc Organized for Faculty and Students.',
                 10,
                N'{
-          "event_master_table": {
-            "columns": [
-              { "name": "sr_no", "type": "INT", "constraints": ["PRIMARY KEY"] },
-              { "name": "start_date_of_event", "type": "DATE" },
-              { "name": "end_date_of_event", "type": "DATE" },
-              { "name": "dates_from_to", "type": "VARCHAR(100)" },
-              { "name": "name_of_faculty_coordinator", "type": "VARCHAR(200)" },
-              { "name": "title_of_the_professional_development_event_for_students", "type": "VARCHAR(200)" },
-              { "name": "title_of_the_administrative_training_program_for_teaching_staff", "type": "VARCHAR(200)" },
-              { "name": "Title_of_the_administrative_training_program_Title_of_the_administrative_training_program_for_non_teaching_staff", "type": "VARCHAR(200)" },
-              { "name": "no_of_participants", "type": "INT" },
-              { "name": "Academic_Departmentor_Cell_or_Committees", "type": "VARCHAR(150)" },
-              { "name": "academic_session", "type": "VARCHAR(100)" },
-              { "name": "collaboration_details", "type": "TEXT" },
-              { "name": "grant_received_YES_NO", "type": "ENUM('YES', 'NO')" },
-              { "name": "grant_details", "type": "TEXT" },
-              { "name": "association_with_professional_societies_for_organization_of_event", "type": "TEXT" },
-              { "name": "no_of_skit_students_participated", "type": "INT" },
-              { "name": "no_of_staff_skit_members_participated", "type": "INT" },
-              { "name": "event_report_attached_in_proper_format_YES_NO", "type": "ENUM('YES', 'NO')" },
-              { "name": "link_to_the_activity_report", "type": "VARCHAR(300)" },
-              { "name": "any_other_remarks", "type": "TEXT" },
-              { "name": "date_format", "type": "VARCHAR(20)" },
-              { "name": "program_for_students", "type": "BOOLEAN" },
-              { "name": "program_for_teaching_staff", "type": "BOOLEAN" },
-              { "name": "program_for_non_teaching_staff", "type": "BOOLEAN" },
-              { "name": "labs_or_coe", "type": "VARCHAR(150)" },
-              { "name": "organization_of_event_details", "type": "TEXT" },
-              { "name": "student_list_attached", "type": "TEXT" },
-              { "name": "staff_list_attached", "type": "TEXT" },
-              { "name": "report_format_verified_YES_NO", "type": "ENUM('YES', 'NO')" },
-              { "name": "report_on_website_link", "type": "VARCHAR(300)" }
-            ]
-          }
-        }'
-        ),
+               "NBA_format_DECA": {
+               "columns": [
+        { "name": "Session_", "type": "VARCHAR(20)" },
+        { "name": "Name_of_student_or_team_members", "type": "VARCHAR(80)" },
+        { "name": "Name_of_award", "type": "VARCHAR(30)" },
+        { "name": "Event_date_to", "type": "DATE" },
+        { "name": "Event_date_from", "type": "DATE" },
+        { "name": "Event_Name", "type": "VARCHAR(60)" },
+        { "name": "Event_Venue", "type": "VARCHAR(90)" },
+        { "name": "level_", "type": "ENUM(''International'', ''National'', ''State'', ''College_level'')" },
+        { "name": "Category", "type": "VARCHAR(60)" },
+        { "name": "Proof_link", "type": "VARCHAR(90)" }
+        ]
+    }
+    }'
+    ),
         ('Result Analysis',
                 'In this folder, we will manage the result analysis of CSE, AI,DS and IoT',
                 11,
@@ -855,9 +831,9 @@ VALUES (
             ]
           }
         }'
-),
+);
 
-  (
+    (
     'Virtual_Lab_Monthly_Usage',
     NULL,
     35,
@@ -876,8 +852,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Master_Time_Table',
     'In this folder, I will manage data for Time table  of Classes, faculties, labs and Lecture rooms.',
     34,
@@ -895,8 +871,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'master_file_Research_centre_Records',
     'In this folder, we will manage Research Centre Records data',
      29,
@@ -918,8 +894,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Remedial_List_of_Students',
     'In this folder we are going to maintain the information such as attendance,time table ,list of student,Notice of remedial�class�.',
     28,
@@ -936,8 +912,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_Research_Projects',
     'In this folder, detailed information related to accepted research projects as well as
     consultancy projects of the faculty members of Computer Science and Engineering Department�will�be�shared.',
@@ -957,8 +933,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Master_table_of_Expert_Lectures',
     'In this folder, detailed information related to the expert or guest lecturers held under any activity will be shared. The folder will have all the related
     documents such as approval, brochure, attendance, PPTs of expert, etc.',
@@ -982,8 +958,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Master_Table_Research_Projects',
     'In this folder, detailed information related to accepted research projects as well
     as consultancy projects of the faculty members of
@@ -1009,8 +985,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_Expert_Lectures',
     'In this folder, detailed information related to the expert or guest lecturers held under any activity will be shared. The folder will have all the related
     documents such as approval, brochure, attendance, PPTs of expert, etc.',
@@ -1030,8 +1006,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_External_Project_Proposal',
     'In this folder, detailed information related to accepted research projects as well as consultancy projects of the students
     of Computer Science and Engineering Department�will�be�shared.',
@@ -1051,8 +1027,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Master_table_of_External_project_proposal',
     'In this folder, detailed information related to accepted research projects as well as consultancy projects of the students
     of Computer Science and Engineering Department�will�be�shared.',
@@ -1078,8 +1054,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_Student_Internship',
     'In this folder, we will manage final year student project list, Mentor approval letters, various sample like Abstract, form-1, form-2, form-3,
     ,SRS, PPT, Project Report, Demo Video etc.',
@@ -1099,8 +1075,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Master_Table_of_Student_Internship',
     'In this folder, we will manage final year student project list, Mentor approval letters, various sample like Abstract, form-1, form-2, form-3,
     ,SRS, PPT, Project Report, Demo Video etc.',
@@ -1116,8 +1092,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'UG_Higher_Studies',
     'NULL',
     23,
@@ -1131,8 +1107,8 @@ VALUES (
             ]
         }
     }'
- ),
- (
+    ),
+    (
     'PG_Higher_Studies',
     'NULL',
     23,
@@ -1146,8 +1122,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Patents',
     'NULL',
     23,
@@ -1162,8 +1138,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Sponsored_Research_Detail',
     'NULL',
     23,
@@ -1180,7 +1156,8 @@ VALUES (
             ]
         }
     }'
-),(
+    ),
+    (
     'Consultancy_Projects_Details',
     'NULL',
     23,
@@ -1197,8 +1174,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'ERP_Total_Student_Strength',
     'NULL',
     23,
@@ -1218,8 +1195,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'ERP_PhD_Student_Strength_Doctoral_Program',
     'NULL',
     23,
@@ -1234,8 +1211,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'PhD_Student_Strength',
     'NULL',
     23,
@@ -1249,11 +1226,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Placement_UG_4_Year_Program',
     'NULL',
-    23,
+    22,
     N'{
         "Placement_UG_4_Year_Program": {
             "columns": [
@@ -1274,11 +1251,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'PG_2_Year_Program',
     'NULL',
-    23,
+    22,
     N'{
         "PG_2_Year_Program": {
             "columns": [
@@ -1296,11 +1273,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Oracle_nimish',
     'In this folder, we will manage Memorandum of understanding (MoU) with Oracle.',
-    24,
+    23,
     N'{
         "Oracle_nimish": {
             "columns": [
@@ -1313,11 +1290,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Average_Placement_of_Student',
     'In this folder, we will manage : Average Placement of Students',
-    25,
+    24,
     N'{
         "Average_Placement_of_Student": {
             "columns": [
@@ -1327,11 +1304,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Placement_Data',
     'In this folder, we will manage : Placement Data',
-    25,
+    24,
     N'{
         "Placement_Data": {
             "columns": [
@@ -1348,11 +1325,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_Journal_Publication',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    26,
+    25,
     N'{
         "NAAC_Journal_Publication": {
             "columns": [
@@ -1369,11 +1346,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Qiv_Journal_Publication',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    26,
+    25,
     N'{
         "QIV_Journal_Publication": {
             "columns": [
@@ -1397,11 +1374,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NBA_Journal_Publication',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    26,
+    25,
     N'{
         "NBA_Journal_Publication": {
             "columns": [
@@ -1418,11 +1395,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Master_Journal_Publications',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    26,
+    25,
     N'{
         "Master_Journal_Publications": {
             "columns": [
@@ -1447,12 +1424,12 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    26,
+    25,
     N'{
         "NAAC_Faculty_Participation": {
             "columns": [
@@ -1473,12 +1450,12 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'QIV_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    26,
+    25,
     N'{
         "QIV_Faculty_Participation": {
             "columns": [
@@ -1494,12 +1471,12 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NBA_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    26,
+    25,
     N'{
         "NBA_Faculty_Participation": {
             "columns": [
@@ -1520,12 +1497,12 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'Master_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    26,
+    25,
     N'{
         "Master_Faculty_Participation": {
             "columns": [
@@ -1547,8 +1524,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_INDUSTRIAL_TRAINING',
     'In this folder, detailed information related to summer internship of V semester students is shared.',
     16,
@@ -1566,8 +1543,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'QIV_INDUSTRIAL_TRAINING',
     'In this folder, detailed information related to summer internship of V semester students is shared.',
     16,
@@ -1590,8 +1567,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NBA_INDUSTRIAL_TRAINING',
     '',
     16,
@@ -1614,8 +1591,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'StudentCourses',
     'In this folder, we will manage : Template for SKIT TIMES Data',
     17,
@@ -1637,8 +1614,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'COE_Event_Training_Report',
     'In this folder, detailed information related to IoT CoE.',
     18,
@@ -1665,11 +1642,11 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_QIV_NBA_MoU_Report',
     'In this folder, we will manage Memorandum of understanding (MoU) with Microsoft.',
-    21,
+    20,
     N'{
         "NAAC_QIV_NBA_MoU_Report": {
             "columns": [
@@ -1682,8 +1659,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'MASTER_format_faculty_higher_study',
     'In this folder, we will manage faculty�s Higher study data',
     14,
@@ -1713,8 +1690,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'AICTE_format_faculty_personal_data',
     'In this folder, we will manage faculties Personal data',
     13,
@@ -1756,8 +1733,8 @@ VALUES (
             ]
         }
     }'
-),
-(
+    ),
+    (
     'NAAC_format_faculty_higher_study',
     'In this folder, we will manage faculties Personal data',
     13,
@@ -1786,4 +1763,4 @@ VALUES (
             ]
         }
     }'
-);
+    );
