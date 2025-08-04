@@ -831,12 +831,12 @@ VALUES (
             ]
           }
         }'
-);
+),
 
     (
     'Virtual_Lab_Monthly_Usage',
     NULL,
-    35,
+    34,
     N'{
         "Virtual_Lab_Monthly_Usage": {
             "columns": [
@@ -856,7 +856,7 @@ VALUES (
     (
     'Master_Time_Table',
     'In this folder, I will manage data for Time table  of Classes, faculties, labs and Lecture rooms.',
-    34,
+    33,
     N'{
         "Master_Time_Table": {
             "columns": [
@@ -875,7 +875,7 @@ VALUES (
     (
     'master_file_Research_centre_Records',
     'In this folder, we will manage Research Centre Records data',
-     29,
+     28,
     N'{
         "master_file_Research_centre_Records": {
             "columns": [
@@ -898,7 +898,7 @@ VALUES (
     (
     'Remedial_List_of_Students',
     'In this folder we are going to maintain the information such as attendance,time table ,list of student,Notice of remedial�class�.',
-    28,
+    27,
     N'{
         "Remedial_List_of_Students": {
             "columns": [
@@ -917,7 +917,7 @@ VALUES (
     'NAAC_Research_Projects',
     'In this folder, detailed information related to accepted research projects as well as
     consultancy projects of the faculty members of Computer Science and Engineering Department�will�be�shared.',
-    32,
+    31,
     N'{
         "NAAC_Research_Projects": {
             "columns": [
@@ -938,7 +938,7 @@ VALUES (
     'Master_table_of_Expert_Lectures',
     'In this folder, detailed information related to the expert or guest lecturers held under any activity will be shared. The folder will have all the related
     documents such as approval, brochure, attendance, PPTs of expert, etc.',
-    32,
+    31,
     N'{
         "Master_table_of_Expert_Lectures": {
             "columns": [
@@ -964,7 +964,7 @@ VALUES (
     'In this folder, detailed information related to accepted research projects as well
     as consultancy projects of the faculty members of
     Computer Science and Engineering Department�will�be�shared.',
-    32,
+    31,
     N'{
         "Master_Table_Research_Projects": {
             "columns": [
@@ -990,7 +990,7 @@ VALUES (
     'NAAC_Expert_Lectures',
     'In this folder, detailed information related to the expert or guest lecturers held under any activity will be shared. The folder will have all the related
     documents such as approval, brochure, attendance, PPTs of expert, etc.',
-    32,
+    31,
     N'{
         "NAAC_Expert_Lectures": {
             "columns": [
@@ -1011,7 +1011,7 @@ VALUES (
     'NAAC_External_Project_Proposal',
     'In this folder, detailed information related to accepted research projects as well as consultancy projects of the students
     of Computer Science and Engineering Department�will�be�shared.',
-     33,
+     32,
     N'{
         "NAAC_External_Project_Proposal": {
             "columns": [
@@ -1032,7 +1032,7 @@ VALUES (
     'Master_table_of_External_project_proposal',
     'In this folder, detailed information related to accepted research projects as well as consultancy projects of the students
     of Computer Science and Engineering Department�will�be�shared.',
-    33,
+    32,
     N'{
         "Master_table_of_External_project_proposal": {
             "columns": [
@@ -1059,7 +1059,7 @@ VALUES (
     'NAAC_Student_Internship',
     'In this folder, we will manage final year student project list, Mentor approval letters, various sample like Abstract, form-1, form-2, form-3,
     ,SRS, PPT, Project Report, Demo Video etc.',
-    33,
+    32,
     N'{
         "NAAC_Student_Internship": {
             "columns": [
@@ -1080,7 +1080,7 @@ VALUES (
     'Master_Table_of_Student_Internship',
     'In this folder, we will manage final year student project list, Mentor approval letters, various sample like Abstract, form-1, form-2, form-3,
     ,SRS, PPT, Project Report, Demo Video etc.',
-    33,
+    32,
     N'{
         "Master_Table_of_Student_Internship": {
             "columns": [
@@ -1096,7 +1096,7 @@ VALUES (
     (
     'UG_Higher_Studies',
     'NULL',
-    23,
+    22,
     N'{
         "UG_Higher_Studies": {
             "columns": [
@@ -1111,7 +1111,7 @@ VALUES (
     (
     'PG_Higher_Studies',
     'NULL',
-    23,
+    22,
     N'{
         "PG_Higher_Studies": {
             "columns": [
@@ -1126,7 +1126,7 @@ VALUES (
     (
     'Patents',
     'NULL',
-    23,
+    22,
     N'{
         "Patents": {
             "columns": [
@@ -1142,7 +1142,7 @@ VALUES (
     (
     'Sponsored_Research_Detail',
     'NULL',
-    23,
+    22,
     N'{
         "Sponsored_Research_Detail": {
             "columns": [
@@ -1160,7 +1160,7 @@ VALUES (
     (
     'Consultancy_Projects_Details',
     'NULL',
-    23,
+    22,
     N'{
         "Consultancy_Projects_Details": {
             "columns": [
@@ -1178,7 +1178,7 @@ VALUES (
     (
     'ERP_Total_Student_Strength',
     'NULL',
-    23,
+    22,
     N'{
         "ERP_Total_Student_Strength": {
             "columns": [
@@ -1199,7 +1199,7 @@ VALUES (
     (
     'ERP_PhD_Student_Strength_Doctoral_Program',
     'NULL',
-    23,
+    22,
     N'{
         "ERP_PhD_Student_Strength_Doctoral_Program": {
             "columns": [
@@ -1215,7 +1215,7 @@ VALUES (
     (
     'PhD_Student_Strength',
     'NULL',
-    23,
+    22,
     N'{
         "PhD_Student_Strength": {
             "columns": [
@@ -1230,7 +1230,7 @@ VALUES (
     (
     'Placement_UG_4_Year_Program',
     'NULL',
-    22,
+    21,
     N'{
         "Placement_UG_4_Year_Program": {
             "columns": [
@@ -1255,7 +1255,7 @@ VALUES (
     (
     'PG_2_Year_Program',
     'NULL',
-    22,
+    21,
     N'{
         "PG_2_Year_Program": {
             "columns": [
@@ -1277,7 +1277,7 @@ VALUES (
     (
     'Oracle_nimish',
     'In this folder, we will manage Memorandum of understanding (MoU) with Oracle.',
-    23,
+    22,
     N'{
         "Oracle_nimish": {
             "columns": [
@@ -1294,7 +1294,7 @@ VALUES (
     (
     'Average_Placement_of_Student',
     'In this folder, we will manage : Average Placement of Students',
-    24,
+    23,
     N'{
         "Average_Placement_of_Student": {
             "columns": [
@@ -1308,7 +1308,7 @@ VALUES (
     (
     'Placement_Data',
     'In this folder, we will manage : Placement Data',
-    24,
+    23,
     N'{
         "Placement_Data": {
             "columns": [
@@ -1329,7 +1329,7 @@ VALUES (
     (
     'NAAC_Journal_Publication',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    25,
+    24,
     N'{
         "NAAC_Journal_Publication": {
             "columns": [
@@ -1350,7 +1350,7 @@ VALUES (
     (
     'Qiv_Journal_Publication',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    25,
+    24,
     N'{
         "QIV_Journal_Publication": {
             "columns": [
@@ -1378,7 +1378,7 @@ VALUES (
     (
     'NBA_Journal_Publication',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    25,
+    24,
     N'{
         "NBA_Journal_Publication": {
             "columns": [
@@ -1399,7 +1399,7 @@ VALUES (
     (
     'Master_Journal_Publications',
     'In this folder, we will manage faculties and students conference, journal, book, book chapter, patent, publications.',
-    25,
+    24,
     N'{
         "Master_Journal_Publications": {
             "columns": [
@@ -1429,7 +1429,7 @@ VALUES (
     'NAAC_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    25,
+    24,
     N'{
         "NAAC_Faculty_Participation": {
             "columns": [
@@ -1455,7 +1455,7 @@ VALUES (
     'QIV_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    25,
+    24,
     N'{
         "QIV_Faculty_Participation": {
             "columns": [
@@ -1476,7 +1476,7 @@ VALUES (
     'NBA_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    25,
+    24,
     N'{
         "NBA_Faculty_Participation": {
             "columns": [
@@ -1502,7 +1502,7 @@ VALUES (
     'Master_Faculty_Participation',
     'In this folder, we will manage faculties participation Professional Development programs
     like FDPs/ Workshops/Seminars/STTPs/Orientation/Induction/Refresher course/training program and conferences.',
-    25,
+    24,
     N'{
         "Master_Faculty_Participation": {
             "columns": [
@@ -1646,7 +1646,7 @@ VALUES (
     (
     'NAAC_QIV_NBA_MoU_Report',
     'In this folder, we will manage Memorandum of understanding (MoU) with Microsoft.',
-    20,
+    19,
     N'{
         "NAAC_QIV_NBA_MoU_Report": {
             "columns": [
