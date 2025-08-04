@@ -3,16 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <title>Documents in {{ folder.folder_name }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+
+    h2 {
+      color: #003366;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    li {
+      background: #ffffff;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    a.button {
+      background-color: #007bff;
+      color: white;
+      padding: 8px 14px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    a.button:hover {
+      background-color: #0056b3;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #003366;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
+
   <h2>Documents in Folder: {{ folder.folder_name }}</h2>
+
   <ul>
     {% for doc in documents %}
-      <li>📄 {{ doc.title }}</li>
+      <li>
+        📄 {{ doc.title }}
+        <a href="{% url 'download_excel' doc.id %}" class="button">Download Excel</a>
+      </li>
     {% empty %}
       <li>No documents found in this folder.</li>
     {% endfor %}
   </ul>
-  <a href="{% url 'folder_list' %}">🔙 Back to Folders</a>
+
+  <a href="{% url 'folder_list' %}" class="back-link">🔙 Back to Folders</a>
+
 </body>
 </html>

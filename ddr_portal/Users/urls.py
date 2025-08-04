@@ -1,6 +1,7 @@
 # your_app/urls.py
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
@@ -13,5 +14,24 @@ path('faculty/', views.faculty_view, name='faculty'),
     path('role_redirect/', views.role_redirect, name='role_redirect'),
     path('folders/', views.folder_list, name='folder_list'),
     path('folders/<int:folder_id>/', views.folder_documents, name='folder_documents'),
+    path('password-reset/',
+         auth_views.PasswordResetView.as_view(template_name='password_reset.html'),
+         name='password_reset'),
+
+    path('password-reset/done/',
+         auth_views.PasswordResetDoneView.as_view(template_name='password_reset_done.html'),
+         name='password_reset_done'),
+
+    path('reset/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'),
+         name='password_reset_confirm'),
+
+    path('reset/done/',
+         auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'),
+         name='password_reset_complete'),
+
+path('documents/<int:document_id>/download/', views.download_excel, name='download_excel'),
+
+
 ]
 
