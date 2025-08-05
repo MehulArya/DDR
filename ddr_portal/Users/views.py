@@ -150,16 +150,16 @@ def download_excel(request, doc_id):
         return response
 
     except json.JSONDecodeError as je:
-        print("❌ JSON Decode Error:", je)
-        return HttpResponse(f"❌ JSON Decode Error: {je}", status=400)
+        print("JSON Decode Error:", je)
+        return HttpResponse(f"JSON Decode Error: {je}", status=400)
 
     except KeyError as ke:
-        print("❌ Missing expected key:", ke)
-        return HttpResponse(f"❌ Missing expected key: {ke}", status=400)
+        print(" Missing expected key:", ke)
+        return HttpResponse(f"Missing expected key: {ke}", status=400)
 
     except Exception as e:
-        print("❌ Unexpected Error:", e)
-        return HttpResponse(f"❌ Unexpected Error: {e}", status=400)
+        print(" Unexpected Error:", e)
+        return HttpResponse(f"Unexpected Error: {e}", status=400)
 
 
 @login_required
