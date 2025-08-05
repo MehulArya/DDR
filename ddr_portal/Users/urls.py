@@ -34,6 +34,8 @@ path('faculty/', views.faculty_view, name='faculty'),
     path('download-excel/<int:doc_id>/', views.download_excel, name='download_excel'),
 path('profile/', views.profile_view, name='profile'),
 
+path('see-template/<int:doc_id>/', views.see_template, name='see_template'),
+
 
 ]
 

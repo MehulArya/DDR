@@ -168,3 +168,30 @@ def profile_view(request):
 
 def home_view(request):
     return render(request, 'home.html')
+
+@login_required
+def see_template(request, doc_id):
+    document = get_object_or_404(Document, id=doc_id)
+    raw_data = document.dynamic_data
+
+    try:
+        if isinstance(raw_data, str):
+            raw_data = raw_data.replace('\n', '').replace('\r', '').strip()
+        else:
+            return HttpResponse("❌ dynamic_data is not a string", status=400)
+
+        dynamic_data = json.loads(raw_data)
+        first_key = next(iter(dynamic_data))
+        columns = dynamic_data[first_key]["columns"]
+
+        return render(request, 'template_preview.html', {
+            'document': document,
+            'columns': columns
+        })
+
+    except json.JSONDecodeError as je:
+        return HttpResponse(f"JSON Decode Error: {je}", status=400)
+    except KeyError as ke:
+        return HttpResponse(f"Missing key: {ke}", status=400)
+    except Exception as e:
+        return HttpResponse(f"Unexpected error: {e}", status=400)
