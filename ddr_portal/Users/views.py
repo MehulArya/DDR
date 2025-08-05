@@ -6,11 +6,13 @@ from .forms import CustomUserCreationForm, CustomLoginForm
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from .models import Folder, Document
-import openpyxl
-from openpyxl.styles import Font
 from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font
+from django.shortcuts import get_object_or_404
 import json
-
+from .models import Document
+from django.contrib.auth.decorators import login_required
 
 # -----------------------------
 # Auth-related views
@@ -105,35 +107,64 @@ def folder_documents(request, folder_id):
 
 # -----------------------------
 # Excel file download view
-# -----------------------------
-
+#
 @login_required
-def download_excel(request, document_id):
-    document = get_object_or_404(Document, id=document_id)
+def download_excel(request, doc_id):
+    document = get_object_or_404(Document, id=doc_id)
+    raw_data = document.dynamic_data
 
     try:
-        data = json.loads(document.dynamic_data)
-        root_key = next(iter(data))
-        columns = data[root_key]['columns']
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return HttpResponse("Invalid JSON format in dynamic_data", status=400)
+        # Clean newline characters
+        if isinstance(raw_data, str):
+            raw_data = raw_data.replace('\n', '').replace('\r', '').strip()
+        else:
+            return HttpResponse("❌ dynamic_data is not a string", status=400)
 
-    # Create Excel
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = document.title
+        # Parse JSON
+        dynamic_data = json.loads(raw_data)
 
-    # Add column names as header
-    header_font = Font(bold=True)
-    for col_idx, col in enumerate(columns, 1):
-        cell = ws.cell(row=1, column=col_idx, value=col['name'])
-        cell.font = header_font
+        # Get main key and columns
+        first_key = next(iter(dynamic_data))
+        columns = dynamic_data[first_key]["columns"]
 
-    # Generate response
-    response = HttpResponse(
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = f'attachment; filename="{document.title}.xlsx"'
-    wb.save(response)
+        # Create Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = document.title
+        ws.sheet_properties.tabColor = "1072BA"
+        ws.freeze_panes = "A2"
 
-    return response
+        for index, col in enumerate(columns, start=1):
+            name = col.get("name", "Unnamed")
+            cell = ws.cell(row=1, column=index, value=name)
+            cell.font = Font(bold=True)
+            ws.column_dimensions[cell.column_letter].width = max(len(name) + 2, 20)
+
+        # Prepare response
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        filename = f"{document.title.replace(' ', '_')}.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        wb.save(response)
+        return response
+
+    except json.JSONDecodeError as je:
+        print("❌ JSON Decode Error:", je)
+        return HttpResponse(f"❌ JSON Decode Error: {je}", status=400)
+
+    except KeyError as ke:
+        print("❌ Missing expected key:", ke)
+        return HttpResponse(f"❌ Missing expected key: {ke}", status=400)
+
+    except Exception as e:
+        print("❌ Unexpected Error:", e)
+        return HttpResponse(f"❌ Unexpected Error: {e}", status=400)
+
+
+@login_required
+def profile_view(request):
+    return render(request, 'profile.html')
+
+def home_view(request):
+    return render(request, 'home.html')

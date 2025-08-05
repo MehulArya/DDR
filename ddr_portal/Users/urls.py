@@ -4,6 +4,7 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+
     path('signup/', views.signup_view, name='signup'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
@@ -30,7 +31,8 @@ path('faculty/', views.faculty_view, name='faculty'),
          auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'),
          name='password_reset_complete'),
 
-path('documents/<int:document_id>/download/', views.download_excel, name='download_excel'),
+    path('download-excel/<int:doc_id>/', views.download_excel, name='download_excel'),
+path('profile/', views.profile_view, name='profile'),
 
 
 ]

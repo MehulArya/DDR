@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome | Document Portal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 40px 60px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #003973;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 10px;
+      font-size: 16px;
+      text-decoration: none;
+      color: white;
+      background-color: #003973;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #0052cc;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Welcome to Document Management Portal</h1>
+  <a href="{% url 'login' %}" class="btn">Login</a>
+  <a href="{% url 'signup' %}" class="btn">Sign Up</a>
+</div>
+
+</body>
+</html>

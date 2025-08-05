@@ -1,17 +1,98 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Documents in {{ folder.folder_name }}</title>
+  <title>Documents in {{ subfolder_name }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background-color: #f9f9f9;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      font-size: 18px;
     }
 
-    h2 {
-      color: #003366;
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      height: 70px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .left-side {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-placeholder {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: #eee;
+    }
+
+    .logo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .search-box input {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+      width: 320px;
+      font-size: 16px;
+    }
+
+    .right-side {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-right: 40px;
+    }
+
+    .right-side i {
+      font-size: 26px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .breadcrumbs {
+      padding: 20px 30px 0;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .breadcrumbs a {
+      text-decoration: none;
+      color: #003973;
+      margin-right: 5px;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .folder-section {
+      background-color: #fff;
+      margin: 30px 300px 40px 300px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .folder-section h2 {
+      font-size: 22px;
+      margin-bottom: 20px;
+      color: #003973;
     }
 
     ul {
@@ -20,57 +101,87 @@
     }
 
     li {
-      background: #ffffff;
-      padding: 15px;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 12px 0;
+      font-size: 18px;
+      color: #333;
+      border-bottom: 1px solid #eee;
     }
 
-    a.button {
-      background-color: #007bff;
-      color: white;
-      padding: 8px 14px;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 14px;
+    li:last-child {
+      border-bottom: none;
     }
 
-    a.button:hover {
-      background-color: #0056b3;
-    }
-
-    .back-link {
+    a.back-link {
       display: inline-block;
-      margin-top: 20px;
+      margin-top: 25px;
+      color: #003973;
       text-decoration: none;
-      color: #003366;
+      font-size: 16px;
     }
 
-    .back-link:hover {
+    a.back-link:hover {
       text-decoration: underline;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <h2>Documents in Folder: {{ folder.folder_name }}</h2>
+  <div class="top-bar">
+    <div class="left-side">
+      <div class="logo-placeholder">
+        <img src="{% static 'images/skit_logo.jpg' %}" alt="SKIT Logo">
+      </div>
+      <div class="search-box">
+        <input type="text" id="docSearch" placeholder="Search documents..." onkeyup="filterDocuments()">
+      </div>
+    </div>
+    <div class="right-side">
+      <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
+      <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
+    </div>
+  </div>
 
-  <ul>
-    {% for doc in documents %}
-      <li>
-        📄 {{ doc.title }}
-        <a href="{% url 'download_excel' doc.id %}" class="button">Download Excel</a>
-      </li>
-    {% empty %}
-      <li>No documents found in this folder.</li>
-    {% endfor %}
-  </ul>
+  <div class="breadcrumbs">
+    <a href="{% url 'role_redirect' %}">Dashboard</a> >
+    <a href="{% url 'folder_list' %}">Folders</a> >
+    <a href="#">{{ folder.folder_name }}</a> >
+    <span>{{ subfolder_name }}</span>
+  </div>
 
-  <a href="{% url 'folder_list' %}" class="back-link">🔙 Back to Folders</a>
+  <div class="folder-section">
+    <h2>Documents in Folder: {{ subfolder_name }}</h2>
+    <ul>
+  {% for doc in documents %}
+    <li>
+      📄 {{ doc.title }}
+      - <a href="{% url 'download_excel' doc.id %}">Download Excel</a>
+    </li>
+  {% empty %}
+    <li>No documents found in this folder.</li>
+  {% endfor %}
+</ul>
+    <a class="back-link" href="{% url 'folder_list' %}">🔙 Back to Folders</a>
+  </div>
+
+  <script>
+    function filterDocuments() {
+      const input = document.getElementById('docSearch').value.toLowerCase();
+      const listItems = document.querySelectorAll('#documentList li');
+
+      listItems.forEach(item => {
+        const title = item.getAttribute('data-title');
+        if (title && title.includes(input)) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    }
+  </script>
 
 </body>
 </html>
