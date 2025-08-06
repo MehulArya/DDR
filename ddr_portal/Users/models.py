@@ -1,5 +1,25 @@
 # models.py
 from django.db import models
+from django.contrib.auth.models import User
+
+class Upload(models.Model):
+    id = models.AutoField(primary_key=True)
+    document = models.ForeignKey('Document', on_delete=models.CASCADE)
+    folder = models.ForeignKey('Folder', on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    upload_time = models.DateTimeField(auto_now_add=True)
+    file_name = models.CharField(max_length=255)
+    file_blob = models.BinaryField()
+    file_size = models.BigIntegerField(null=True, blank=True)
+    mime_type = models.CharField(max_length=255, null=True, blank=True)
+    sha256_hash = models.CharField(max_length=64, null=True, blank=True)
+
+    class Meta:
+        db_table = 'UPLOADS'
+        managed = False  # ✅ because you're using an existing SQL Server table
+
+    def __str__(self):
+        return self.file_name
 
 class Folder(models.Model):
     id = models.AutoField(primary_key=True)
@@ -31,3 +51,24 @@ class Document(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class Upload(models.Model):
+    id = models.AutoField(primary_key=True)
+    document = models.ForeignKey('Document', on_delete=models.CASCADE, db_column='document_id')
+    folder = models.ForeignKey('Folder', on_delete=models.CASCADE, db_column='folder_id')
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, db_column='uploaded_by')  # ✅ FIX HERE
+    upload_time = models.DateTimeField(auto_now_add=True)
+    file_name = models.CharField(max_length=255)
+    file_blob = models.BinaryField()
+    file_size = models.BigIntegerField(null=True, blank=True)
+    mime_type = models.CharField(max_length=255, null=True, blank=True)
+    sha256_hash = models.CharField(max_length=64, null=True, blank=True)
+
+    class Meta:
+        db_table = 'UPLOADS'
+        managed = False
+
+    def __str__(self):
+        return self.file_name

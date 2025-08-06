@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404
 import json
 from .models import Document
 from django.contrib.auth.decorators import login_required
+from .models import Upload
 
 # -----------------------------
 # Auth-related views
@@ -195,3 +196,61 @@ def see_template(request, doc_id):
         return HttpResponse(f"Missing key: {ke}", status=400)
     except Exception as e:
         return HttpResponse(f"Unexpected error: {e}", status=400)
+
+
+#this is for uplolad part
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Folder, Document, Upload
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+import hashlib
+
+@login_required
+def upload_folder_list(request):
+    folders = Folder.objects.all()
+    return render(request, 'upload_file_list.html', {'folders': folders})
+
+@login_required
+def upload_document_list(request, folder_id):
+    folder = get_object_or_404(Folder, id=folder_id)
+    documents = Document.objects.filter(folder_id=folder.id)
+    return render(request, 'upload_document_list.html', {
+        'folder': folder,
+        'documents': documents
+    })
+
+@login_required
+def upload_file(request, folder_id, document_id):
+    folder = get_object_or_404(Folder, id=folder_id)
+    document = get_object_or_404(Document, id=document_id)
+
+    if request.method == 'POST' and request.FILES.get('file'):
+        uploaded_file = request.FILES['file']
+        file_blob = uploaded_file.read()
+        file_name = uploaded_file.name
+        file_size = uploaded_file.size
+        mime_type = uploaded_file.content_type
+        sha256_hash = hashlib.sha256(file_blob).hexdigest()
+
+        Upload.objects.create(
+            document=document,
+            folder=folder,
+            uploaded_by=request.user,
+            file_name=file_name,
+            file_blob=file_blob,
+            file_size=file_size,
+            mime_type=mime_type,
+            sha256_hash=sha256_hash
+        )
+
+        messages.success(request, 'File uploaded successfully!')
+        return HttpResponseRedirect(reverse('upload_document_list', args=[folder.id]))
+
+    return render(request, 'upload_form.html', {
+        'folder': folder,
+        'document': document
+    })

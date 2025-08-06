@@ -1,0 +1,13 @@
+<h2>Documents in Folder: {{ folder.folder_name }}</h2>
+<ul>
+  {% for doc in documents %}
+    <li>
+      📄 {{ doc.title }} -
+      <a href="{% url 'upload_file' folder.id doc.id %}">Upload File</a>
+    </li>
+  {% empty %}
+    <li>No documents found in this folder.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'upload_folder_list' %}">🔙 Back to Folder List</a>
