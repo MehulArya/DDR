@@ -1,4 +1,4 @@
- -- Switch to database
+-- Switch to database
 USE ddr;
 GO
 
@@ -143,7 +143,7 @@ VALUES ('Academic Calendar', NULL, 'TLP', SYSDATETIME(), SYSDATETIME(), 1),
 ('Time Table CSE',NULL,'TLP',SYSDATETIME(),SYSDATETIME(),1),
 ('Virtual Lab Records',NULL,'Internal',SYSDATETIME(),SYSDATETIME(),1)
 ;
-
+use ddr;
 -- Create Documents Table
 -- Create Documents Table
 CREATE TABLE DOCUMENTS (
@@ -155,6 +155,7 @@ CREATE TABLE DOCUMENTS (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (folder_id) REFERENCES FOLDERS(id)
 );
+
 CREATE INDEX idx_folder_latest ON DOCUMENTS (folder_id);
 
 INSERT INTO DOCUMENTS (
@@ -168,7 +169,7 @@ VALUES (
   'In this folder, we will manage Academic Calender of the CSE department.',
   1,
   '{
-      "Academic_Calendar":{
+    "AcademicCalendar": {
       "columns": [
         { "name": "Semester", "type": "INT", "constraints": "NOT NULL, CHECK (Semester BETWEEN 1 AND 8), PRIMARY KEY" },
         { "name": "Commencement of Classes", "type": "DATE" },
@@ -1846,3 +1847,29 @@ VALUES (
      }
  }'
 );
+
+
+use ddr;
+
+CREATE TABLE uploads (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    document_id INT NOT NULL,
+    folder_id INT NOT NULL,
+    uploaded_by INT NOT NULL,
+    upload_time DATETIME DEFAULT GETDATE(),
+    file_name NVARCHAR(255) NOT NULL,
+    file_blob VARBINARY(MAX) NOT NULL,
+    file_size BIGINT,
+    mime_type NVARCHAR(255),
+    sha256_hash CHAR(64), 
+
+    CONSTRAINT FK_uploads_document FOREIGN KEY (document_id) REFERENCES DOCUMENTS(id),
+    CONSTRAINT FK_uploads_folder FOREIGN KEY (folder_id) REFERENCES FOLDERS(id),
+    CONSTRAINT FK_uploads_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES auth_user(id)
+);
+
+
+
+    
+
+
