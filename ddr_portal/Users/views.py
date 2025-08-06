@@ -5,16 +5,17 @@ from django.contrib.auth import login, authenticate, logout
 from .forms import CustomUserCreationForm, CustomLoginForm
 from django.contrib.auth.decorators import login_required
 from django.db import connection
-from .models import Folder, Document
+from .models import Folder, Document, Upload
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font
-from django.shortcuts import get_object_or_404
 import json
 from .models import Document
 from django.contrib.auth.decorators import login_required
 from .models import Upload
-
+import hashlib
+from django.urls import reverse
+from django.contrib import messages
 # -----------------------------
 # Auth-related views
 # -----------------------------
@@ -201,13 +202,9 @@ def see_template(request, doc_id):
 #this is for uplolad part
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Folder, Document, Upload
-from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-import hashlib
+
+
+
 
 @login_required
 def upload_folder_list(request):

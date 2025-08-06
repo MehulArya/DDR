@@ -9,9 +9,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     # path('dashboard/', views.dashboard, name='dashboard'),  # example
-   path('custom_admin/', views.admin_view, name='admin'),
-path('head/', views.head_view, name='head'),
-path('faculty/', views.faculty_view, name='faculty'),
+    path('custom_admin/', views.admin_view, name='admin'),
+    path('head/', views.head_view, name='head'),
+    path('faculty/', views.faculty_view, name='faculty'),
     path('role_redirect/', views.role_redirect, name='role_redirect'),
     path('folders/', views.folder_list, name='folder_list'),
     path('folders/<int:folder_id>/', views.folder_documents, name='folder_documents'),
@@ -32,11 +32,11 @@ path('faculty/', views.faculty_view, name='faculty'),
          name='password_reset_complete'),
 
     path('download-excel/<int:doc_id>/', views.download_excel, name='download_excel'),
-path('profile/', views.profile_view, name='profile'),
+    path('profile/', views.profile_view, name='profile'),
 
-path('see-template/<int:doc_id>/', views.see_template, name='see_template'),
-#these are used to upload the new folders
-  path('upload/', views.upload_folder_list, name='upload_folder_list'),  # → uses upload_file_list.html
+    path('see-template/<int:doc_id>/', views.see_template, name='see_template'),
+    #these are used to upload the new folders
+    path('upload/', views.upload_folder_list, name='upload_folder_list'),  # → uses upload_file_list.html
 
     # Step 2: Show documents in selected folder
     path('upload/folder/<int:folder_id>/', views.upload_document_list, name='upload_document_list'),  # → uses upload_document_list.html
