@@ -1,4 +1,4 @@
--- Switch to database
+ -- Switch to database
 USE ddr;
 GO
 
@@ -155,7 +155,6 @@ CREATE TABLE DOCUMENTS (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (folder_id) REFERENCES FOLDERS(id)
 );
-
 CREATE INDEX idx_folder_latest ON DOCUMENTS (folder_id);
 
 INSERT INTO DOCUMENTS (
@@ -169,7 +168,7 @@ VALUES (
   'In this folder, we will manage Academic Calender of the CSE department.',
   1,
   '{
-    "AcademicCalendar": {
+      "Academic_Calendar":{
       "columns": [
         { "name": "Semester", "type": "INT", "constraints": "NOT NULL, CHECK (Semester BETWEEN 1 AND 8), PRIMARY KEY" },
         { "name": "Commencement of Classes", "type": "DATE" },

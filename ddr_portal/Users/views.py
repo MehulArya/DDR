@@ -118,7 +118,7 @@ def download_excel(request, doc_id):
         if isinstance(raw_data, str):
             raw_data = raw_data.replace('\n', '').replace('\r', '').strip()
         else:
-            return HttpResponse("❌ dynamic_data is not a string", status=400)
+            return HttpResponse("dynamic_data is not a string", status=400)
 
         # Parse JSON
         dynamic_data = json.loads(raw_data)
