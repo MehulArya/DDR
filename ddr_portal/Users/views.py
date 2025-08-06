@@ -20,6 +20,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from .models import UserRole
 # -----------------------------
 # Auth-related views
 # -----------------------------
@@ -167,10 +168,7 @@ def download_excel(request, doc_id):
         print(" Unexpected Error:", e)
         return HttpResponse(f"Unexpected Error: {e}", status=400)
 
-# views.py
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import UserRole
+
 
 @login_required
 def profile_view(request):
@@ -224,11 +222,6 @@ def see_template(request, doc_id):
 
 
 #this is for uplolad part
-
-
-
-
-
 
 @login_required
 def upload_folder_list(request):
