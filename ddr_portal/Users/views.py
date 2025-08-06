@@ -219,35 +219,38 @@ def upload_document_list(request, folder_id):
         'folder': folder,
         'documents': documents
     })
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 
+@require_POST
 @login_required
-def upload_file(request, folder_id, document_id):
-    folder = get_object_or_404(Folder, id=folder_id)
-    document = get_object_or_404(Document, id=document_id)
+def ajax_upload_file(request):
+    try:
+        uploaded_file = request.FILES.get('file')
+        folder_id = request.POST.get('folder_id')
+        document_id = request.POST.get('document_id')
 
-    if request.method == 'POST' and request.FILES.get('file'):
-        uploaded_file = request.FILES['file']
+        if not uploaded_file or not folder_id or not document_id:
+            return JsonResponse({'success': False, 'error': 'Missing data'})
+
+        folder = get_object_or_404(Folder, id=folder_id)
+        document = get_object_or_404(Document, id=document_id)
         file_blob = uploaded_file.read()
-        file_name = uploaded_file.name
-        file_size = uploaded_file.size
-        mime_type = uploaded_file.content_type
-        sha256_hash = hashlib.sha256(file_blob).hexdigest()
 
         Upload.objects.create(
             document=document,
             folder=folder,
             uploaded_by=request.user,
-            file_name=file_name,
+            file_name=uploaded_file.name,
             file_blob=file_blob,
-            file_size=file_size,
-            mime_type=mime_type,
-            sha256_hash=sha256_hash
+            file_size=uploaded_file.size,
+            mime_type=uploaded_file.content_type,
+            sha256_hash=hashlib.sha256(file_blob).hexdigest()
         )
 
-        messages.success(request, 'File uploaded successfully!')
-        return HttpResponseRedirect(reverse('upload_document_list', args=[folder.id]))
+        return JsonResponse({'success': True})
 
-    return render(request, 'upload_form.html', {
-        'folder': folder,
-        'document': document
-    })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

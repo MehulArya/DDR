@@ -42,7 +42,8 @@ urlpatterns = [
     path('upload/folder/<int:folder_id>/', views.upload_document_list, name='upload_document_list'),  # → uses upload_document_list.html
 
     # Step 3: Upload file to specific document
-    path('upload/folder/<int:folder_id>/document/<int:document_id>/', views.upload_file, name='upload_file'),  # → uses upload_form.html form
-    
+   
+    path('upload/ajax/', views.ajax_upload_file, name='ajax_upload_file'),
+
 ]
 
