@@ -44,6 +44,7 @@ urlpatterns = [
     # Step 3: Upload file to specific document
    
     path('upload/ajax/', views.ajax_upload_file, name='ajax_upload_file'),
+      path('profile/', views.profile_view, name='profile'),
 
 ]
 

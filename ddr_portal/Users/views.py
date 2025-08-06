@@ -16,6 +16,10 @@ from .models import Upload
 import hashlib
 from django.urls import reverse
 from django.contrib import messages
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 # -----------------------------
 # Auth-related views
 # -----------------------------
@@ -163,10 +167,30 @@ def download_excel(request, doc_id):
         print(" Unexpected Error:", e)
         return HttpResponse(f"Unexpected Error: {e}", status=400)
 
+# views.py
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import UserRole
 
 @login_required
 def profile_view(request):
-    return render(request, 'profile.html')
+    user = request.user
+
+    try:
+        user_role = UserRole.objects.select_related('role').get(user=user)
+        role_name = user_role.role.role_name
+    except UserRole.DoesNotExist:
+        role_name = 'Not Assigned'
+
+    return render(request, 'profile.html', {
+        'name': user.get_full_name() or user.username,
+        'email': user.email,
+        'phone': 'Not Available',  # or customize if needed
+        'role': role_name,
+    })
+
+
+
 
 def home_view(request):
     return render(request, 'home.html')
@@ -219,10 +243,7 @@ def upload_document_list(request, folder_id):
         'folder': folder,
         'documents': documents
     })
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
+
 
 @require_POST
 @login_required

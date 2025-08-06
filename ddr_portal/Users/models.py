@@ -72,3 +72,28 @@ class Upload(models.Model):
 
     def __str__(self):
         return self.file_name
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
+
+class Role(models.Model):
+    role_id = models.IntegerField(primary_key=True, db_column='role_id')
+    role_name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = 'ROLES'
+        managed = False
+
+    def __str__(self):
+        return self.role_name
+
+
+class UserRole(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, db_column='user_id', primary_key=True)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, db_column='role_id')
+
+    class Meta:
+        db_table = 'USER_ROLES'
+        managed = False
