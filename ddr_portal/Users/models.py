@@ -97,3 +97,5 @@ class UserRole(models.Model):
     class Meta:
         db_table = 'USER_ROLES'
         managed = False
+
+        
