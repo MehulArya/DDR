@@ -9,9 +9,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     # path('dashboard/', views.dashboard, name='dashboard'),  # example
-   path('custom_admin/', views.admin_view, name='admin'),
-path('head/', views.head_view, name='head'),
-path('faculty/', views.faculty_view, name='faculty'),
+    path('custom_admin/', views.admin_view, name='admin'),
+    path('head/', views.head_view, name='head'),
+    path('faculty/', views.faculty_view, name='faculty'),
     path('role_redirect/', views.role_redirect, name='role_redirect'),
     path('folders/', views.folder_list, name='folder_list'),
     path('folders/<int:folder_id>/', views.folder_documents, name='folder_documents'),
@@ -32,10 +32,11 @@ path('faculty/', views.faculty_view, name='faculty'),
          name='password_reset_complete'),
 
     path('download-excel/<int:doc_id>/', views.download_excel, name='download_excel'),
-path('profile/', views.profile_view, name='profile'),
+    path('profile/', views.profile_view, name='profile'),
 
-path('see-template/<int:doc_id>/', views.see_template, name='see_template'),
+    path('see-template/<int:doc_id>/', views.see_template, name='see_template'),
 
-
+    path("assign_roles/", views.assign_folder_role, name="assign_folder_role"),
+    path('remove-role/<int:user_role_id>/', views.remove_role, name='remove_role'),
 ]
 

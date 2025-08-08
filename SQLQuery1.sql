@@ -1846,3 +1846,18 @@ VALUES (
      }
  }'
 );
+
+-- Create Folder User Role 
+
+CREATE TABLE FOLDER_USER_ROLE (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL FOREIGN KEY REFERENCES auth_user(id),
+    folder_id INT NOT NULL FOREIGN KEY REFERENCES FOLDERS(id),
+    file_id INT NULL FOREIGN KEY REFERENCES DOCUMENTS(id), -- newly added (optional, nullable)
+    role_id INT NOT NULL FOREIGN KEY REFERENCES ROLES(role_id),
+    assigned_at DATETIME DEFAULT GETDATE(),
+
+    CONSTRAINT UQ_user_folder UNIQUE (user_id, folder_id, file_id)
+);
+GO
+

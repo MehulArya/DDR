@@ -1,5 +1,6 @@
 # models.py
 from django.db import models
+from django.contrib.auth.models import User
 
 class Folder(models.Model):
     id = models.AutoField(primary_key=True)
@@ -31,3 +32,42 @@ class Document(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class FolderUserRole(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    folder = models.ForeignKey('Folder', on_delete=models.CASCADE)
+    file = models.ForeignKey('Document', on_delete=models.CASCADE, null=True, blank=True)  # newly added
+    role = models.ForeignKey('Role', on_delete=models.CASCADE)
+    assigned_at = models.DateTimeField()
+
+    class Meta:
+        db_table = 'FOLDER_USER_ROLE'
+        managed = False
+        unique_together = ('user', 'folder', 'file')  # updated uniqueness constraint
+
+    def __str__(self):
+        parts = [self.user.username, self.folder.folder_name]
+        if self.document:
+            parts.append(self.document.title)  # assuming 'title' is the correct field
+        parts.append(self.role.role_name)
+        return " - ".join(parts)
+
+
+class Role(models.Model):
+    role_id = models.AutoField(primary_key=True)
+    role_name = models.CharField(max_length=255)
+    description = models.TextField()
+
+    class Meta:
+        db_table = 'ROLES'
+        managed = False
+
+    def __str__(self):
+        parts = [self.user.username, self.folder.folder_name]
+        if self.document:
+            parts.append(self.document.title)
+        parts.append(self.role.role_name)
+        return " - ".join(parts)

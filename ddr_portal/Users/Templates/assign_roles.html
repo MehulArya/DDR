@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assign Folder Roles</title>
+    <script>
+        // JavaScript object to map folder_id -> list of files
+        const allFiles = {};
+        {% for f in documents %}
+            if (!allFiles["{{ f.folder.id }}"]) {
+                allFiles["{{ f.folder.id }}"] = [];
+            }
+            allFiles["{{ f.folder.id }}"].push({ id: "{{ f.id }}", title: "{{ f.title }}" });
+        {% endfor %}
+
+        function updateUI() {
+            const roleSelect = document.getElementById("roleSelect");
+            const folderContainer = document.getElementById("folderContainer");
+            const fileContainer = document.getElementById("fileContainer");
+            const folderSelect = document.getElementById("folderSelect");
+            const fileSelect = document.getElementById("fileSelect");
+
+            const selectedRole = roleSelect.options[roleSelect.selectedIndex].text.toLowerCase();
+
+            // Hide both dropdowns if role is Admin
+            if (selectedRole === "admin") {
+                folderContainer.style.display = "none";
+                fileContainer.style.display = "none";
+                fileSelect.innerHTML = "";
+                return;
+            }
+
+            // Show folder dropdown for all other roles
+            folderContainer.style.display = "block";
+
+            // Show file dropdown only if Faculty is selected
+            if (selectedRole === "faculty") {
+                const selectedFolder = folderSelect.value;
+                const files = allFiles[selectedFolder] || [];
+                fileSelect.innerHTML = "";
+
+                files.forEach(file => {
+                    const option = document.createElement("option");
+                    option.value = file.id;
+                    option.text = file.title;
+                    fileSelect.appendChild(option);
+                });
+
+                fileContainer.style.display = "block";
+            } else {
+                fileContainer.style.display = "none";
+                fileSelect.innerHTML = "";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("roleSelect").addEventListener("change", updateUI);
+            document.getElementById("folderSelect").addEventListener("change", updateUI);
+        });
+    </script>
+</head>
+<body>
+    <h2>Assign Role to User for a Folder</h2>
+
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label>User:</label>
+        <select name="user_id" required>
+            {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- Folder Dropdown -->
+        <div id="folderContainer">
+            <label>Folder:</label>
+            <select name="folder_id" id="folderSelect" required>
+                {% for folder in folders %}
+                    <option value="{{ folder.id }}">{{ folder.folder_name }}</option>
+                {% endfor %}
+            </select><br><br>
+        </div>
+
+        <label>Role:</label>
+        <select name="role_id" id="roleSelect" required>
+            {% for role in roles %}
+                <option value="{{ role.role_id }}">{{ role.role_name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- File Dropdown (Hidden initially) -->
+        <div id="fileContainer" style="display: none;">
+            <label>File:</label>
+            <select name="file_id" id="fileSelect"></select><br><br>
+        </div>
+
+        <button type="submit">Assign Role</button>
+    </form>
+
+    <hr>
+    <h3>Existing Role Assignments</h3>
+    <table border="1">
+        <tr>
+            <th>User</th>
+            <th>Folder</th>
+            <th>Role</th>
+            <th>File</th>
+            <th>Assigned At</th>
+            <th>Action</th>
+        </tr>
+        {% for a in assignments %}
+        <tr>
+            <td>{{ a.user.username }}</td>
+            <td>{% if a.folder %}{{ a.folder.folder_name }}{% else %}All Folders{% endif %}</td>
+            <td>{{ a.role.role_name }}</td>
+            <td>{% if a.file %}{{ a.file.title }}{% else %}All Files{% endif %}</td>
+            <td>{{ a.assigned_at }}</td>
+            <td>
+                {% if a.role.role_name|lower == "admin" %}
+                    <a href="{% url 'remove_role' a.id %}"
+                       onclick="return confirm('Are you sure?') && confirm('This is the LAST admin! Are you REALLY sure?')">
+                       Remove
+                    </a>
+                {% else %}
+                    <a href="{% url 'remove_role' a.id %}"
+                       onclick="return confirm('Are you sure you want to remove this role?')">
+                       Remove
+                    </a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

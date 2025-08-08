@@ -1,5 +1,4 @@
 # your_app/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from .forms import CustomUserCreationForm, CustomLoginForm
@@ -11,8 +10,12 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 from django.shortcuts import get_object_or_404
 import json
-from .models import Document
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from .models import Folder, Role, FolderUserRole
+from django.contrib import messages
+from django.utils.timezone import now
 
 # -----------------------------
 # Auth-related views
@@ -178,7 +181,7 @@ def see_template(request, doc_id):
         if isinstance(raw_data, str):
             raw_data = raw_data.replace('\n', '').replace('\r', '').strip()
         else:
-            return HttpResponse("❌ dynamic_data is not a string", status=400)
+            return HttpResponse("dynamic_data is not a string", status=400)
 
         dynamic_data = json.loads(raw_data)
         first_key = next(iter(dynamic_data))
@@ -195,3 +198,123 @@ def see_template(request, doc_id):
         return HttpResponse(f"Missing key: {ke}", status=400)
     except Exception as e:
         return HttpResponse(f"Unexpected error: {e}", status=400)
+
+from .models import FolderUserRole, Document
+
+def get_visible_documents(user, folder):
+    # Get roles for the user in this folder
+    user_roles = FolderUserRole.objects.filter(user=user, folder=folder)
+
+    # If the user is Head, return all documents
+    if user_roles.filter(role__name='Head').exists():
+        return Document.objects.filter(folder=folder)
+
+    # If Faculty, return only assigned documents
+    faculty_roles = user_roles.filter(role__name='Faculty', file__isnull=False)
+    return Document.objects.filter(id__in=faculty_roles.values_list('file_id', flat=True))
+
+from django.utils.timezone import now
+from django.db.models import Q
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.timezone import now
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from .models import Folder, Document, Role, FolderUserRole
+
+@login_required
+def assign_folder_role(request):
+    # Get Admin role ID once to compare later
+    admin_role_id = Role.objects.get(role_name__iexact="admin").role_id
+
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
+        folder_id = request.POST.get("folder_id")
+        role_id = int(request.POST.get("role_id"))  # ensure int
+        file_id = request.POST.get("file_id") or None  # blank -> None
+
+        if user_id and role_id:
+            try:
+                if role_id == admin_role_id:
+                    # Assign all folders
+                    for folder in Folder.objects.all():
+                        FolderUserRole.objects.get_or_create(
+                            user_id=user_id,
+                            folder_id=folder.id,
+                            role_id=role_id
+                        )
+                    # Assign all files
+                    for file in Document.objects.all():
+                        FolderUserRole.objects.get_or_create(
+                            user_id=user_id,
+                            file_id=file.id,
+                            role_id=role_id
+                        )
+                    messages.success(request, "Admin role assigned with full access.")
+                else:
+                    # Prevent duplicate assignments for non-admins
+                    exists = FolderUserRole.objects.filter(
+                        user_id=user_id,
+                        folder_id=folder_id,
+                        file_id=file_id
+                    ).exists()
+
+                    if exists:
+                        messages.warning(request, "This role assignment already exists.")
+                    else:
+                        FolderUserRole.objects.create(
+                            user_id=user_id,
+                            folder_id=folder_id,
+                            file_id=file_id,
+                            role_id=role_id,
+                            assigned_at=now()
+                        )
+                        messages.success(request, "Role assigned successfully.")
+
+            except Exception as e:
+                messages.error(request, f"Error: {str(e)}")
+        else:
+            messages.error(request, "User and role are required.")
+
+        return redirect('assign_folder_role')
+
+    # GET request
+    users = User.objects.exclude(is_superuser=True)  # remove admin from user dropdown
+    folders = Folder.objects.all()
+    roles = Role.objects.all()
+    documents = Document.objects.select_related('folder').all()
+    assignments = FolderUserRole.objects.select_related('user', 'folder', 'role', 'file')
+
+    return render(request, "assign_roles.html", {
+        "users": users,
+        "folders": folders,
+        "roles": roles,
+        "assignments": assignments,
+        "documents": documents
+    })
+
+
+
+@login_required
+def remove_role(request, user_role_id):
+    role_instance = get_object_or_404(FolderUserRole, id=user_role_id)
+
+    # Check if removing last admin
+    if role_instance.role.role_name.lower() == "admin":
+        admin_count = FolderUserRole.objects.filter(role__role_name__iexact="admin").count()
+        if admin_count <= 1:
+            # First confirmation
+            confirm1 = request.GET.get("confirm1")
+            confirm2 = request.GET.get("confirm2")
+
+            if not confirm1:
+                messages.warning(request, "Are you sure you want to remove the LAST admin? Click again to confirm.")
+                return redirect(f"{request.path}?confirm1=true")
+
+            if not confirm2:
+                messages.warning(request, "This is your FINAL confirmation. Click again to permanently remove.")
+                return redirect(f"{request.path}?confirm1=true&confirm2=true")
+
+    role_instance.delete()
+    messages.success(request, "Role removed successfully.")
+    return redirect("assign_folder_role")
