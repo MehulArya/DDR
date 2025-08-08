@@ -78,12 +78,12 @@ WSGI_APPLICATION = 'ddr_portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'DDR_COLLEGE_PROJECT',     # 🔁 Replace with your actual database name
-        'HOST': 'RIYA-LAPTOP',
+        'NAME': 'ddr',
+        'HOST': 'MEHUL-LAPTOP',
         'PORT': '',
 
         'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',  # Or 18, if you installed that
+            'driver': 'ODBC Driver 17 for SQL Server',
             'trusted_connection': 'yes',
         },
     }
