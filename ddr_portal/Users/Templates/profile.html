@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,15 +140,15 @@
   <div class="top-bar">
     <div class="left-side">
       <div class="logo-placeholder">
-        <img src="file:///E:/Downloads%202.O/skit%20logo.jpg" alt="Logo">
+        <img src="{% static 'images/skit_logo.jpg' %}" alt="SKIT Logo">
       </div>
       <div class="search-box">
-        <input type="text" placeholder="Search...">
+        
       </div>
     </div>
     <div class="right-side">
       <i class="bi bi-house-door" onclick="location.href='admin.html'"></i>
-      <i class="bi bi-person-circle" onclick="location.href='profile.html'"></i>
+     
     </div>
   </div>
 
@@ -160,21 +161,21 @@
     <div class="profile-header">
       <img src="https://via.placeholder.com/80" alt="Profile Photo">
       <div class="info">
-        <h2>User Name</h2>
+        <h2>{{ name }}</h2>
       </div>
     </div>
    <div class="profile-body">
       <div class="field">
         <label>Email:</label>
-        <p>user@gmail.com</p>
+        <p>{{ email }}</p>
       </div>
       <div class="field">
         <label>Mobile No.:</label>
-        <p>‪+91-9876543210‬</p>
+        <p>‪ {{ phone }}‬</p>
       </div>
       <div class="field">
         <label>User Role:</label>
-        <p>Admin</p>
+        <p>{{ role }}</p>
       </div>
     </div>
   </div>

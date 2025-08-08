@@ -3,6 +3,8 @@ from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
 
+
+
 urlpatterns = [
 
     path('signup/', views.signup_view, name='signup'),
@@ -35,6 +37,16 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
 
     path('see-template/<int:doc_id>/', views.see_template, name='see_template'),
+    #these are used to upload the new folders
+    path('upload/', views.upload_folder_list, name='upload_folder_list'),  # → uses upload_file_list.html
+
+    # Step 2: Show documents in selected folder
+    path('upload/folder/<int:folder_id>/', views.upload_document_list, name='upload_document_list'),  # → uses upload_document_list.html
+
+    # Step 3: Upload file to specific document
+
+    path('upload/ajax/', views.ajax_upload_file, name='ajax_upload_file'),
+      path('profile/', views.profile_view, name='profile'),
 
     path("assign_roles/", views.assign_folder_role, name="assign_folder_role"),
     path('remove-role/<int:user_role_id>/', views.remove_role, name='remove_role'),

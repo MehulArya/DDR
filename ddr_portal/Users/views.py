@@ -1,15 +1,16 @@
 # your_app/views.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from .forms import CustomUserCreationForm, CustomLoginForm
 from django.contrib.auth.decorators import login_required
 from django.db import connection
-from .models import Folder, Document
+from .models import Folder, Document, Upload
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font
-from django.shortcuts import get_object_or_404
 import json
+from .models import Document
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
@@ -17,6 +18,15 @@ from .models import Folder, Role, FolderUserRole
 from django.contrib import messages
 from django.utils.timezone import now
 
+from .models import Upload
+import hashlib
+from django.urls import reverse
+from django.contrib import messages
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .models import UserRole
 # -----------------------------
 # Auth-related views
 # -----------------------------
@@ -165,9 +175,26 @@ def download_excel(request, doc_id):
         return HttpResponse(f"Unexpected Error: {e}", status=400)
 
 
+
 @login_required
 def profile_view(request):
-    return render(request, 'profile.html')
+    user = request.user
+
+    try:
+        user_role = UserRole.objects.select_related('role').get(user=user)
+        role_name = user_role.role.role_name
+    except UserRole.DoesNotExist:
+        role_name = 'Not Assigned'
+
+    return render(request, 'profile.html', {
+        'name': user.get_full_name() or user.username,
+        'email': user.email,
+        'phone': 'Not Available',  # or customize if needed
+        'role': role_name,
+    })
+
+
+
 
 def home_view(request):
     return render(request, 'home.html')
@@ -198,6 +225,58 @@ def see_template(request, doc_id):
         return HttpResponse(f"Missing key: {ke}", status=400)
     except Exception as e:
         return HttpResponse(f"Unexpected error: {e}", status=400)
+
+
+#this is for uplolad part
+
+@login_required
+def upload_folder_list(request):
+    folders = Folder.objects.all()
+    return render(request, 'upload_file_list.html', {'folders': folders})
+
+@login_required
+def upload_document_list(request, folder_id):
+    folder = get_object_or_404(Folder, id=folder_id)
+    documents = Document.objects.filter(folder_id=folder.id)
+    return render(request, 'upload_document_list.html', {
+        'folder': folder,
+        'documents': documents
+    })
+
+
+@require_POST
+@login_required
+def ajax_upload_file(request):
+    try:
+        uploaded_file = request.FILES.get('file')
+        folder_id = request.POST.get('folder_id')
+        document_id = request.POST.get('document_id')
+
+        if not uploaded_file or not folder_id or not document_id:
+            return JsonResponse({'success': False, 'error': 'Missing data'})
+
+        folder = get_object_or_404(Folder, id=folder_id)
+        document = get_object_or_404(Document, id=document_id)
+        file_blob = uploaded_file.read()
+
+        Upload.objects.create(
+            document=document,
+            folder=folder,
+            uploaded_by=request.user,
+            file_name=uploaded_file.name,
+            file_blob=file_blob,
+            file_size=uploaded_file.size,
+            mime_type=uploaded_file.content_type,
+            sha256_hash=hashlib.sha256(file_blob).hexdigest()
+        )
+
+        return JsonResponse({'success': True})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+
 
 from .models import FolderUserRole, Document
 

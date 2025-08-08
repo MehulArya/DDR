@@ -1,0 +1,8 @@
+<h2>Select a Folder to Upload</h2>
+<ul>
+  {% for folder in folders %}
+    <li>
+      <a href="{% url 'upload_document_list' folder.id %}">{{ folder.folder_name }}</a>
+    </li>
+  {% endfor %}
+</ul>
