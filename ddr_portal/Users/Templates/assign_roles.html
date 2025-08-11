@@ -166,19 +166,22 @@
       <div class="logo-placeholder">
         <img src="{% static 'images/skit_logo.jpg' %}" alt="SKIT Logo">
       </div>
-      <div class="search-box">
-        <input type="text" placeholder="Search...">
-      </div>
     </div>
     <div class="right-side">
-      <i class="bi bi-house-door" onclick="location.href='admin.html'"></i>
-      <i class="bi bi-person-circle" onclick="location.href='profile.html'"></i>
+      <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
+      <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
     </div>
   </div>
 
   <!-- Breadcrumbs -->
   <div class="breadcrumbs">
-    <a href="admin.html">Dashboard</a> >
+    {% if role_id == 1 %}
+        <a href="{% url 'admin' %}">Dashboard</a> >
+    {% elif role_id == 2 %}
+        <a href="{% url 'head' %}">Dashboard</a> >
+    {% elif role_id == 3 %}
+        <a href="{% url 'faculty' %}">Dashboard</a> >
+    {% endif %}
     <span>Assign Roles</span>
   </div>
 
