@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -5,6 +6,7 @@
   <meta charset="UTF-8">
   <title>Template Preview - {{ document.title }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -85,10 +87,11 @@
     /* Main Section */
     .content-section {
       background-color: #fff;
-      margin: 30px 300px 40px 300px;
+      margin: 30px auto 40px auto;
       padding: 25px;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 95%;
     }
 
     h2 {
@@ -96,10 +99,16 @@
       margin-bottom: 20px;
     }
 
-    table {
+    .table-container {
+      overflow-x: auto;
       width: 100%;
+    }
+
+    table {
       border-collapse: collapse;
-      margin-top: 20px;
+      white-space: nowrap;
+      min-width: max-content;
+      width: auto;
     }
 
     th, td {
@@ -109,8 +118,9 @@
     }
 
     th {
-      background-color: #003973;
-      color: white;
+      background-color: #bbd3ea;
+      color: rgb(22, 1, 1);
+      font-weight: 600;
     }
 
     a.back {
@@ -123,6 +133,22 @@
     a.back:hover {
       text-decoration: underline;
     }
+
+    /* Download button */
+    .download-btn {
+      background-color: #003973;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .download-btn:hover {
+      background-color: #00509e;
+    }
   </style>
 </head>
 <body>
@@ -133,46 +159,61 @@
       <div class="logo-placeholder">
         <img src="{% static 'images/skit_logo.jpg' %}" alt="Logo">
       </div>
-      <div class="search-box">
-        <input type="text" placeholder="Search...">
-      </div>
     </div>
 
     <div class="right-side">
-      <i class="bi bi-house-door" onclick="location.href='{% url 'admin' %}'"></i>
+      <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
       <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
     </div>
   </div>
 
-  <!-- Breadcrumbs -->
   <div class="breadcrumbs">
-    <a href="{% url 'admin' %}">Dashboard</a> >
-    <a href="{% url 'folder_documents' document.folder.id %}">Documents</a> >
-    <span>Template Preview</span>
+    {% if role_id == 1 %}
+        <a href="{% url 'admin' %}">Dashboard</a> >
+    {% elif role_id == 2 %}
+        <a href="{% url 'head' %}">Dashboard</a> >
+    {% elif role_id == 3 %}
+        <a href="{% url 'faculty' %}">Dashboard</a> >
+    {% endif %}
+    <a href="{% url 'upload_folder_list' %}">Folders</a> >
+    <span>{{ folder.folder_name }}</span>
   </div>
 
   <!-- Main Content -->
   <div class="content-section">
     <h2>Template Preview: {{ document.title }}</h2>
-    <table>
-      <thead>
-        <tr>
-          {% for col in columns %}
-            <th>{{ col.name }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          {% for col in columns %}
-            <td>...</td>
-          {% endfor %}
-        </tr>
-      </tbody>
-    </table>
+
+    <button id="downloadExcel" class="download-btn">Download as Excel</button>
+
+    <div class="table-container">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            {% for col in columns %}
+              <th>{{ col.name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            {% for col in columns %}
+              <td>...</td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <a class="back" href="{% url 'folder_documents' document.folder.id %}">← Back to Documents</a>
   </div>
+
+  <script>
+    document.getElementById("downloadExcel").addEventListener("click", function () {
+        let table = document.getElementById("dataTable");
+        let workbook = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+        XLSX.writeFile(workbook, "template_preview.xlsx");
+    });
+  </script>
 
 </body>
 </html>
