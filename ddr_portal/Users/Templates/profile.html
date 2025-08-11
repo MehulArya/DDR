@@ -147,13 +147,25 @@
       </div>
     </div>
     <div class="right-side">
-      <i class="bi bi-house-door" onclick="location.href='admin.html'"></i>
-     
+      {% if role_id == 1 %}
+        <i class="bi bi-house-door" onclick="location.href='{% url 'admin' %}'"></i>
+    {% elif role_id == 2 %}
+        <i class="bi bi-house-door" onclick="location.href='{% url 'head' %}'"></i>
+    {% elif role_id == 3 %}
+        <i class="bi bi-house-door" onclick="location.href='{% url 'faculty' %}'"></i>
+    {% endif %}
+
     </div>
   </div>
 
   <div class="breadcrumbs">
-    <a href="admin.html">Dashboard</a> >
+    {% if role_id == 1 %}
+        <a href="{% url 'admin' %}">Dashboard</a> >
+    {% elif role_id == 2 %}
+        <a href="{% url 'head' %}">Dashboard</a> >
+    {% elif role_id == 3 %}
+        <a href="{% url 'faculty' %}">Dashboard</a> >
+    {% endif %}
     <span>Profile</span>
   </div>
 

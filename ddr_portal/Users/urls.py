@@ -46,7 +46,7 @@ urlpatterns = [
     # Step 3: Upload file to specific document
 
     path('upload/ajax/', views.ajax_upload_file, name='ajax_upload_file'),
-      path('profile/', views.profile_view, name='profile'),
+    path('profile/', views.profile_view, name='profile'),
 
     path("assign_roles/", views.assign_folder_role, name="assign_folder_role"),
     path('remove-role/<int:user_role_id>/', views.remove_role, name='remove_role'),

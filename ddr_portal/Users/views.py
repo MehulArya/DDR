@@ -17,7 +17,8 @@ from django.contrib.auth.models import User
 from .models import Folder, Role, FolderUserRole
 from django.contrib import messages
 from django.utils.timezone import now
-
+from django.shortcuts import render
+from .utils import get_user_role_id
 from .models import Upload
 import hashlib
 from django.urls import reverse
@@ -397,3 +398,9 @@ def remove_role(request, user_role_id):
     role_instance.delete()
     messages.success(request, "Role removed successfully.")
     return redirect("assign_folder_role")
+
+def profile_view(request):
+    role_id = get_user_role_id(request.user.id)
+    print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
+    role_id = int(role_id) if role_id is not None else 0
+    return render(request, "profile.html", {"role_id": role_id})
