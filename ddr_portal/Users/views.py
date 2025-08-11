@@ -5,7 +5,7 @@ from django.contrib.auth import login, authenticate, logout
 from .forms import CustomUserCreationForm, CustomLoginForm
 from django.contrib.auth.decorators import login_required
 from django.db import connection
-from .models import Folder, Document, Upload
+from .models import Folder, Document, Upload,FolderUserRole
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -231,11 +231,40 @@ def see_template(request, doc_id):
 
 @login_required
 def upload_folder_list(request):
-    folders = Folder.objects.all()
+    user = request.user
+
+    # Check if user is admin
+    is_admin = FolderUserRole.objects.filter(
+        user=user,
+        role__role_name__iexact="admin"
+    ).exists()
+
+    if is_admin:
+        # Admin sees all folders
+        folders = Folder.objects.all()
+    else:
+        # Non-admin sees only assigned folders
+        folders = Folder.objects.filter(
+            id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True)
+        ).distinct()
+
     return render(request, 'upload_file_list.html', {'folders': folders})
 
 @login_required
 def upload_document_list(request, folder_id):
+    user = request.user
+
+    # Check if user is allowed to see this folder
+    is_admin = FolderUserRole.objects.filter(
+        user=user,
+        role__role_name__iexact="admin"
+    ).exists()
+
+    if not is_admin:
+        has_access = FolderUserRole.objects.filter(user=user, folder_id=folder_id).exists()
+        if not has_access:
+            return HttpResponse("Unauthorized", status=403)
+
     folder = get_object_or_404(Folder, id=folder_id)
     documents = Document.objects.filter(folder_id=folder.id)
     return render(request, 'upload_document_list.html', {
