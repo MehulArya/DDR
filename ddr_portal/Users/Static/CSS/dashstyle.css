@@ -1,21 +1,25 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  display: flex;
   background-color: #f7f9fc;
 }
 
+/* Sidebar */
 .sidebar {
-  width: 200px;
+  width: 180px;
   background-color: #fff;
   border-right: 1px solid #ddd;
-  height: 100vh;
+  height: 100%;
   padding: 20px 10px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
 .sidebar.hide-sidebar {
-  margin-left: -220px;
+  transform: translateX(-220px);
 }
 
 .sidebar img {
@@ -46,9 +50,15 @@ body {
   background-color: #e6f0ff;
 }
 
+/* Main Content */
 .main-content {
-  flex-grow: 1;
   padding: 20px;
+  margin-left: 200px; /* space for sidebar */
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.hide-sidebar ~ .main-content {
+  margin-left: 0; /* content expands when sidebar hidden */
 }
 
 .top-bar {
@@ -102,6 +112,7 @@ body {
   border-top: 1px solid #ccc;
 }
 
+/* Cards */
 .card-container {
   display: flex;
   gap: 40px;
@@ -137,4 +148,10 @@ body {
 
 .card button:hover {
   background-color: #0057b7;
+}
+
+/* Search Box Focus */
+.search-box input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
