@@ -1,23 +1,197 @@
+<!--{% load static %}-->
+<!--&lt;!&ndash; templates/signup.html &ndash;&gt;-->
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Create Account</title>-->
+<!--    <link rel="stylesheet" type="text/css" href="{% static 'css/signup.css' %}">-->
+<!--</head>-->
+<!--<body>-->
+<!--    <div class="container">-->
+<!--        <div class="form-box">-->
+<!--            <h2>Create Your Account</h2>-->
+<!--            <form method="POST">-->
+<!--                {% csrf_token %}-->
+<!--                {{ form.as_p }}-->
+<!--                <button type="submit">Sign Up</button>-->
+<!--            </form>-->
+<!--            <p class="login-link">Already have an account? <a href="{% url 'login' %}">Log in</a></p>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</body>-->
+<!--</html>-->
+
+
 {% load static %}
-<!-- templates/signup.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Create Account</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/signup.css' %}">
+    <style>
+        /* layout tweaks */
+        form p { margin-bottom: 8px; }
+        input { margin-top: 3px; width:100%; padding:8px; border-radius:5px; border:1px solid #ccc; }
+
+        /* error styling */
+        .errorlist { color:#b00020; margin:6px 0; padding-left:18px; }
+        .field-error { color:#b00020; font-size:14px; margin:4px 0; }
+
+        /* password rules styling */
+        #password-help { margin: 6px 0 0 0; }
+        #password-help ul { margin:5px 0; padding-left:20px; }
+        #password-help ul li.invalid { color: red; }
+        #password-help ul li.valid { color: green; }
+        #password-help ul li { transition: color .15s ease-in-out; }
+
+        /* simple submit button */
+        button { width:100%; padding:10px; background:#007bff; color:#fff; border:none; border-radius:5px; cursor:pointer; }
+        button:hover { background:#0056b3; }
+
+        .form-box { width:350px; padding:28px; border-radius:8px; background:#fff; box-shadow:0 0 10px rgba(0,0,0,0.08); }
+        .container { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#f4f6f8; }
+        h2 { text-align:center; margin-bottom:16px; }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="form-box">
             <h2>Create Your Account</h2>
-            <form method="POST">
+
+            {# non-field errors (e.g. password2 mismatch shows here sometimes) #}
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                {% for err in form.non_field_errors %}
+                    <li>{{ err }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="POST" novalidate>
                 {% csrf_token %}
-                {{ form.as_p }}
+
+                <p>
+                    {{ form.username.label_tag }}
+                    {# field-level errors #}
+                    {% if form.username.errors %}
+                        <ul class="errorlist">
+                        {% for err in form.username.errors %}
+                            <li>{{ err }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {{ form.username }}
+                </p>
+
+                <p>
+                    {{ form.email.label_tag }}
+                    {% if form.email.errors %}
+                        <ul class="errorlist">
+                        {% for err in form.email.errors %}
+                            <li>{{ err }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {{ form.email }}
+                </p>
+
+                <p>
+                    {{ form.password1.label_tag }}
+                    {% if form.password1.errors %}
+                        <ul class="errorlist">
+                        {% for err in form.password1.errors %}
+                            <li>{{ err }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {{ form.password1 }}
+                    <div id="password-help">
+                        {{ form.password1.help_text|safe }}
+                    </div>
+                </p>
+
+                <p>
+                    {{ form.password2.label_tag }}
+                    {% if form.password2.errors %}
+                        <ul class="errorlist">
+                        {% for err in form.password2.errors %}
+                            <li>{{ err }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {{ form.password2 }}
+                </p>
+
                 <button type="submit">Sign Up</button>
             </form>
-            <p class="login-link">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+
+            <p style="text-align:center;margin-top:12px;">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
         </div>
     </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const passwordField = document.getElementById("id_password1");
+        const usernameField = document.getElementById("id_username");
+        const emailField = document.getElementById("id_email");
+
+        // select password rules from the help text wrapper
+        const rules = document.querySelectorAll("#password-help ul li");
+
+        function updateChecks() {
+            if (!rules || rules.length === 0) return;
+            const pwd = passwordField ? passwordField.value : "";
+            const username = usernameField ? usernameField.value || "" : "";
+            const email = emailField ? emailField.value || "" : "";
+
+            rules.forEach((rule) => {
+                const text = rule.innerText.toLowerCase();
+                let valid = false;
+
+                if (text.includes("similar")) {
+                    // basic similarity check: does not include username or email local-part
+                    const emailLocal = email.split('@')[0] || "";
+                    valid = pwd && !pwd.toLowerCase().includes(username.toLowerCase()) && !pwd.toLowerCase().includes(emailLocal.toLowerCase());
+                } else if (text.includes("at least") || text.includes("characters")) {
+                    // handles "at least 8 characters" (works if number changes)
+                    // extract digits from the text if possible
+                    const m = text.match(/(\d+)/);
+                    const minLen = m ? parseInt(m[1], 10) : 8;
+                    valid = pwd.length >= minLen;
+                } else if (text.includes("entirely numeric") || text.includes("numeric")) {
+                    valid = pwd && !/^\d+$/.test(pwd);
+                } else if (text.includes("commonly used")) {
+                    // backend-only check; keep neutral
+                    valid = null;
+                } else {
+                    // fallback: don't change state for unknown rule text
+                    valid = null;
+                }
+
+                if (valid === true) {
+                    rule.classList.add("valid");
+                    rule.classList.remove("invalid");
+                } else if (valid === false) {
+                    rule.classList.add("invalid");
+                    rule.classList.remove("valid");
+                } else {
+                    rule.classList.remove("valid", "invalid");
+                }
+            });
+        }
+
+        // attach listeners if fields exist
+        if (passwordField) passwordField.addEventListener("input", updateChecks);
+        if (usernameField) usernameField.addEventListener("input", updateChecks);
+        if (emailField) emailField.addEventListener("input", updateChecks);
+
+        // run once on load (useful when the form is returned with errors and fields pre-filled)
+        updateChecks();
+    });
+    </script>
 </body>
 </html>
+
+

@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Users'
+    'Users',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -79,8 +80,8 @@ WSGI_APPLICATION = 'ddr_portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'ddr',
-        'HOST': 'MEHUL-LAPTOP',
+        'NAME': 'DDR_COLLEGE_PROJECT',
+        'HOST': 'Riya-LAPTOP',
         'PORT': '',
 
         'OPTIONS': {
@@ -103,9 +104,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
