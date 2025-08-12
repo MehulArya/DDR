@@ -1,0 +1,45 @@
+<h2>Edit Folder Structure</h2>
+
+<!-- Add Folder Form -->
+<form method="POST" style="margin-bottom: 20px;">
+    {% csrf_token %}
+    <input type="text" name="folder_name" placeholder="New Folder Name" required>
+    <input type="text" name="category" placeholder="Category (optional)">
+    <button type="submit" name="action" value="add">Add Folder</button>
+</form>
+
+<hr>
+
+<!-- Folder List -->
+<table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th>Folder Name</th>
+            <th>Category</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for folder in folders %}
+        <tr>
+            <td>
+                <a href="{% url 'edit_folder_documents' folder.id %}">{{ folder.folder_name }}</a>
+            </td>
+            <td>{{ folder.category|default:"-" }}</td>
+            <td>
+                <form method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="folder_id" value="{{ folder.id }}">
+                    <button type="submit" name="action" value="delete" onclick="return confirm('Delete this folder?')">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" style="text-align: center;">No folders found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
