@@ -207,13 +207,16 @@
     <a class="back" href="{% url 'folder_documents' document.folder.id %}">← Back to Documents</a>
   </div>
 
-  <script>
+<script>
     document.getElementById("downloadExcel").addEventListener("click", function () {
         let table = document.getElementById("dataTable");
         let workbook = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-        XLSX.writeFile(workbook, "template_preview.xlsx");
+        let docName = "{{ document.title|escapejs }}";
+        docName = docName.replace(/[^a-z0-9_\-]/gi, "_");
+        XLSX.writeFile(workbook, docName + ".xlsx");
     });
-  </script>
+</script>
+
 
 </body>
 </html>
