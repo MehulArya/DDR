@@ -1,0 +1,55 @@
+<h2>Edit Document: {{ document.title }}</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Document Title:</label>
+    <input type="text" name="title" value="{{ document.title }}" required>
+
+    <label>Description:</label>
+    <textarea name="description">{{ document.description }}</textarea>
+
+    <hr>
+
+    <label>Table Name:</label>
+    <input type="text" name="table_name" value="{{ table_name }}" required>
+
+    <h3>Columns</h3>
+    <div id="columns-container">
+        {% for col in columns %}
+            <div class="column-row" style="margin-bottom: 5px;">
+                <input type="text" name="col_name_{{ forloop.counter0 }}" value="{{ col.name }}" placeholder="Column Name" required>
+                <input type="text" name="col_type_{{ forloop.counter0 }}" value="{{ col.type }}" placeholder="Type" required>
+                <input type="text" name="col_constraints_{{ forloop.counter0 }}" value="{{ col.constraints|default:'' }}" placeholder="Constraints">
+
+                <!-- Remove column button -->
+                <button type="submit" name="remove_column" value="{{ forloop.counter0 }}" style="background-color: red; color: white;">Remove</button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <input type="hidden" name="total_columns" id="total_columns" value="{{ columns|length }}">
+
+    <!-- Add new column dynamically -->
+    <button type="button" onclick="addColumn()">Add Column</button>
+    <br><br>
+
+    <button type="submit">Save Changes</button>
+</form>
+
+<script>
+function addColumn() {
+    const container = document.getElementById('columns-container');
+    const index = container.children.length;
+    const div = document.createElement('div');
+    div.classList.add('column-row');
+    div.style.marginBottom = '5px';
+    div.innerHTML = `
+        <input type="text" name="col_name_${index}" placeholder="Column Name" required>
+        <input type="text" name="col_type_${index}" placeholder="Type" required>
+        <input type="text" name="col_constraints_${index}" placeholder="Constraints">
+    `;
+    container.appendChild(div);
+    document.getElementById('total_columns').value = container.children.length;
+}
+</script>

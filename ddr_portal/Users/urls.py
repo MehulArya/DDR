@@ -50,5 +50,8 @@ urlpatterns = [
 
     path("assign_roles/", views.assign_folder_role, name="assign_folder_role"),
     path('remove-role/<int:user_role_id>/', views.remove_role, name='remove_role'),
+    path('edit_list/', views.edit_list, name='edit_list'),
+    path('folder/<int:folder_id>/', views.folder_documents_edit, name='folder_edit_documents'),
+    path('edit_dynamic_table/<int:doc_id>/', views.edit_dynamic_table, name='edit_dynamic_table'),
 ]
 

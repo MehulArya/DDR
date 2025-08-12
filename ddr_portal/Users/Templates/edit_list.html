@@ -1,0 +1,8 @@
+<h2>Select a Folder</h2>
+<ul>
+{% for folder in folders %}
+    <li>
+        <a href="{% url 'folder_edit_documents' folder.id %}">{{ folder.folder_name }}</a>
+    </li>
+{% endfor %}
+</ul>

@@ -433,3 +433,93 @@ def profile_view(request):
     print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
     role_id = int(role_id) if role_id is not None else 0
     return render(request, "profile.html", {"role_id": role_id})
+
+from django.shortcuts import render, get_object_or_404
+from .models import Folder, Document
+
+def edit_list(request):
+    folders = Folder.objects.all()
+    return render(request, 'edit_list.html', {'folders': folders})
+
+def folder_documents_edit(request, folder_id):
+    folder = get_object_or_404(Folder, id=folder_id)
+    documents = Document.objects.filter(folder=folder)
+    return render(request, 'folder_documents.html', {
+        'folder': folder,
+        'documents': documents
+    })
+
+def edit_dynamic_table(request, doc_id):
+    document = get_object_or_404(Document, id=doc_id)
+    return render(request, 'edit_dynamic_table.html', {'document': document})
+
+import json
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Document
+
+def edit_dynamic_table(request, doc_id):
+    document = get_object_or_404(Document, id=doc_id)
+
+    # Parse dynamic_data JSON
+    dynamic_data = {}
+    if document.dynamic_data:
+        try:
+            dynamic_data = json.loads(document.dynamic_data)
+        except json.JSONDecodeError:
+            dynamic_data = {}
+
+    # The table name is the first key in the dict
+    table_name = next(iter(dynamic_data.keys()), "")
+    columns = dynamic_data.get(table_name, {}).get("columns", [])
+
+    if request.method == "POST":
+        # Handle remove column action
+        if "remove_column" in request.POST:
+            remove_index = int(request.POST.get("remove_column"))
+            if 0 <= remove_index < len(columns):
+                columns.pop(remove_index)
+
+            # Save the updated JSON after deletion
+            updated_data = {
+                table_name: {
+                    "columns": columns
+                }
+            }
+            document.dynamic_data = json.dumps(updated_data, indent=4)
+            document.save()
+
+            return redirect("edit_dynamic_table", doc_id=doc_id)
+
+        # Handle update action
+        new_table_name = request.POST.get("table_name")
+        new_columns = []
+        total = int(request.POST.get("total_columns", 0))
+        for i in range(total):
+            col_name = request.POST.get(f"col_name_{i}")
+            col_type = request.POST.get(f"col_type_{i}")
+            col_constraints = request.POST.get(f"col_constraints_{i}", "")
+            if col_name and col_type:
+                col_data = {"name": col_name, "type": col_type}
+                if col_constraints:
+                    col_data["constraints"] = col_constraints
+                new_columns.append(col_data)
+
+        updated_data = {
+            new_table_name: {
+                "columns": new_columns
+            }
+        }
+
+        document.dynamic_data = json.dumps(updated_data, indent=4)
+        document.title = request.POST.get("title", document.title)
+        document.description = request.POST.get("description", document.description)
+        document.save()
+
+        return redirect("edit_dynamic_table", doc_id=doc_id)
+
+    return render(request, "edit_dynamic_table.html", {
+        "document": document,
+        "table_name": table_name,
+        "columns": columns,
+    })
+
