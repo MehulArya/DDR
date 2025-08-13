@@ -29,6 +29,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from .models import UserRole
+from django.utils import timezone
+from .models import Folder, Document
 # -----------------------------
 # Auth-related views
 # -----------------------------
@@ -543,6 +545,7 @@ def edit_dynamic_table(request, doc_id):
         "columns": columns,
     })
 
+<<<<<<< HEAD
 
 
 
@@ -684,3 +687,78 @@ def history_delete_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
     file_obj.delete()
     return redirect('history_index')
+=======
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from django.contrib import messages
+from .models import Folder, Document
+
+# Manage folders: list, add, delete
+def edit_folders(request):
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "add":
+            folder_name = request.POST.get("folder_name")
+            category = request.POST.get("category")
+            if folder_name:
+                Folder.objects.create(
+                    folder_name=folder_name,
+                    category=category or None,
+                    created_at=timezone.now(),
+                    updated_at=timezone.now(),
+                    is_active=True
+                )
+                messages.success(request, "Folder added successfully.")
+            else:
+                messages.error(request, "Folder name cannot be empty.")
+        elif action == "delete":
+            folder_id = request.POST.get("folder_id")
+            folder = Folder.objects.filter(id=folder_id).first()
+            if folder:
+                folder.delete()
+                messages.success(request, "Folder deleted successfully.")
+            else:
+                messages.error(request, "Folder not found.")
+        return redirect("edit_folders")
+
+    folders = Folder.objects.filter(is_active=True).order_by('folder_name')
+    return render(request, "edit_folders.html", {"folders": folders})
+
+
+# Manage documents within a folder: list, add, delete
+def edit_folder_documents(request, folder_id):
+    folder = get_object_or_404(Folder, id=folder_id)
+    if request.method == "POST":
+        if "add_document" in request.POST:
+            title = request.POST.get("title")
+            description = request.POST.get("description", "")
+            if title:
+                Document.objects.create(
+                    title=title,
+                    description=description,
+                    folder=folder,
+                    dynamic_data="{}",  # empty JSON
+                    created_at=timezone.now()
+                )
+                messages.success(request, "Document added successfully.")
+            else:
+                messages.error(request, "Title is required.")
+            return redirect("edit_folder_documents", folder_id=folder.id)
+
+        elif "delete_document" in request.POST:
+            doc_id = request.POST.get("doc_id")
+            doc = Document.objects.filter(id=doc_id, folder=folder).first()
+            if doc:
+                doc.delete()
+                messages.success(request, "Document deleted successfully.")
+            else:
+                messages.error(request, "Document not found.")
+            return redirect("edit_folder_documents", folder_id=folder.id)
+
+    documents = Document.objects.filter(folder=folder)
+    return render(request, "edit_folder_documents.html", {
+        "folder": folder,
+        "documents": documents,
+    })
+
+>>>>>>> 57466c2d3d12fbcc87109ad06ff09a67ce4058a2
