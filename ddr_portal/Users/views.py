@@ -545,7 +545,6 @@ def edit_dynamic_table(request, doc_id):
         "columns": columns,
     })
 
-<<<<<<< HEAD
 
 
 
@@ -687,7 +686,6 @@ def history_delete_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
     file_obj.delete()
     return redirect('history_index')
-=======
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib import messages
@@ -761,4 +759,3 @@ def edit_folder_documents(request, folder_id):
         "documents": documents,
     })
 
->>>>>>> 57466c2d3d12fbcc87109ad06ff09a67ce4058a2

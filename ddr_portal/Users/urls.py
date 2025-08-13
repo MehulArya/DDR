@@ -53,12 +53,9 @@ urlpatterns = [
     path('edit_list/', views.edit_list, name='edit_list'),
     path('folder/<int:folder_id>/', views.folder_documents_edit, name='folder_edit_documents'),
     path('edit_dynamic_table/<int:doc_id>/', views.edit_dynamic_table, name='edit_dynamic_table'),
-<<<<<<< HEAD
-=======
     path('edit_folders/', views.edit_folders, name='edit_folders'),
     path('edit_folders/<int:folder_id>/', views.edit_folder_documents, name='edit_folder_documents'),
-]
->>>>>>> 57466c2d3d12fbcc87109ad06ff09a67ce4058a2
+
 
 
   path('View History/', views.history_index, name='history_index'),

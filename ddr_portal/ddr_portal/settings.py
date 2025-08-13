@@ -80,7 +80,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'ddr',
-        'HOST': 'Mehul-Laptop',
+        'HOST': 'LAPTOP-643V3CM2',
         'PORT': '',
 
         'OPTIONS': {
