@@ -448,11 +448,11 @@ def remove_role(request, user_role_id):
     messages.success(request, "Role removed successfully.")
     return redirect("assign_folder_role")
 
-def profile_view(request):
-    role_id = get_user_role_id(request.user.id)
-    print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
-    role_id = int(role_id) if role_id is not None else 0
-    return render(request, "profile.html", {"role_id": role_id})
+# def profile_view(request):
+#     role_id = get_user_role_id(request.user.id)
+#     print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
+#     role_id = int(role_id) if role_id is not None else 0
+#     return render(request, "profile.html", {"role_id": role_id})
 
 from django.shortcuts import render, get_object_or_404
 from .models import Folder, Document
@@ -543,3 +543,144 @@ def edit_dynamic_table(request, doc_id):
         "columns": columns,
     })
 
+
+
+
+
+import io
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from .models import Upload
+import pandas as pd
+import csv
+import openpyxl
+
+def history_index(request):
+    files = Upload.objects.all().order_by('-upload_time')
+    return render(request, 'history_index.html', {'files': files})
+
+import csv
+import io
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse
+import openpyxl
+from .models import Upload
+
+def history_view_file(request, file_id):
+    file = get_object_or_404(Upload, id=file_id)
+    filename = file.file_name.lower()  # ✅ Use correct model field
+    rows = []
+
+    try:
+        if filename.endswith('.csv'):
+            # Decode CSV file content from binary
+            content = file.file_blob.decode('utf-8')
+            reader = csv.reader(io.StringIO(content))
+            rows = list(reader)
+
+        elif filename.endswith('.xlsx'):
+            # Read XLSX file from binary
+            in_memory_file = io.BytesIO(file.file_blob)
+            wb = openpyxl.load_workbook(in_memory_file)
+            sheet = wb.active
+            for row in sheet.iter_rows(values_only=True):
+                rows.append([cell if cell is not None else '' for cell in row])
+
+        else:
+            return HttpResponse(
+                " File uploaded successfully but preview is only available for .csv or .xlsx files."
+            )
+
+    except Exception as e:
+        return HttpResponse(f" Error while reading file: {e}")
+
+    return render(request, 'history_view.html', {'file': file, 'rows': rows})
+
+import pandas as pd
+from io import BytesIO
+from django.shortcuts import get_object_or_404, render
+from .models import Upload
+import openpyxl
+
+def history_edit_file(request, file_id):
+    file_obj = get_object_or_404(Upload, id=file_id)
+    extension = file_obj.file_name.lower().split('.')[-1]  # ✅ correct field
+
+    try:
+        file_data = file_obj.file_blob  # ✅ correct field
+        file_stream = BytesIO(file_data)
+
+        if extension == 'csv':
+            df = pd.read_csv(file_stream)
+        elif extension in ['xls', 'xlsx']:
+            df = pd.read_excel(file_stream, engine='openpyxl')
+        else:
+            return render(request, 'history_edit.html', {
+                'error': 'Unsupported file format'
+            })
+
+        if df.empty:
+            return render(request, 'history_edit.html', {
+                'error': 'File is empty or unreadable.'
+            })
+
+        return render(request, 'history_edit.html', {
+            'df': df.to_dict(orient='records'),
+            'columns': df.columns,
+            'file_id': file_id
+        })
+
+    except Exception as e:
+        return render(request, 'history_edit.html', {
+            'error': f'❌ Error reading file: {e}'
+        })
+
+
+
+import pandas as pd
+from io import BytesIO
+from django.shortcuts import get_object_or_404, redirect
+from .models import Upload
+
+def history_save_file(request, file_id):
+    file = get_object_or_404(Upload, id=file_id)
+    extension = file.file_name.lower().split('.')[-1]
+
+    # Recreate DataFrame from POST data
+    rows = []
+    columns = request.POST.getlist('columns')
+    total_rows = int(request.POST.get('total_rows', 0))
+
+    for i in range(total_rows):
+        row = [request.POST.get(f'{col}_{i}', '') for col in columns]
+        rows.append(row)
+
+    df = pd.DataFrame(rows, columns=columns)
+
+    if extension == 'csv':
+        file.file_blob = df.to_csv(index=False).encode('utf-8')
+
+    elif extension in ['xls', 'xlsx']:
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False)
+        file.file_blob = output.getvalue()
+
+    else:
+        # Unsupported format
+        return redirect('history_view_file', file_id=file.id)
+
+    file.save()
+    return redirect('history_view_file', file_id=file.id)
+
+
+def history_download_file(request, file_id):
+    file_obj = get_object_or_404(Upload, id=file_id)
+    response = HttpResponse(file_obj.file_blob, content_type=file_obj.mime_type)
+    response['Content-Disposition'] = f'attachment; filename="{file_obj.file_name}"'
+    return response
+
+def history_delete_file(request, file_id):
+    file_obj = get_object_or_404(Upload, id=file_id)
+    file_obj.delete()
+    return redirect('history_index')

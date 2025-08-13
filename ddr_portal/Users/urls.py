@@ -53,5 +53,13 @@ urlpatterns = [
     path('edit_list/', views.edit_list, name='edit_list'),
     path('folder/<int:folder_id>/', views.folder_documents_edit, name='folder_edit_documents'),
     path('edit_dynamic_table/<int:doc_id>/', views.edit_dynamic_table, name='edit_dynamic_table'),
-]
 
+
+  path('View History/', views.history_index, name='history_index'),
+    path('history/view/<int:file_id>/', views.history_view_file, name='history_view_file'),
+    path('history/edit/<int:file_id>/', views.history_edit_file, name='history_edit_file'),
+    path('history/save/<int:file_id>/', views.history_save_file, name='history_save_file'),
+    path('history/download/<int:file_id>/', views.history_download_file, name='history_download_file'),
+    path('history/delete/<int:file_id>/', views.history_delete_file, name='history_delete_file'),
+
+]
