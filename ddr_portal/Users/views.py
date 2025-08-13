@@ -31,6 +31,66 @@ from django.http import JsonResponse
 from .models import UserRole
 from django.utils import timezone
 from .models import Folder, Document
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from django.contrib import messages
+from .models import Folder, Document
+
+
+
+
+from django.utils.timezone import now
+from django.db.models import Q
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.timezone import now
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from .models import Folder, Document, Role, FolderUserRole
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Folder, Document
+
+
+
+from .models import FolderUserRole, Document
+
+
+import json
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Document
+
+
+import io
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from .models import Upload
+import pandas as pd
+import csv
+import openpyxl
+
+import csv
+import io
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse
+import openpyxl
+from .models import Upload
+
+import pandas as pd
+from io import BytesIO
+from django.shortcuts import get_object_or_404, render
+from .models import Upload
+import openpyxl
+
+import pandas as pd
+from io import BytesIO
+from django.shortcuts import get_object_or_404, redirect
+from .models import Upload
+from django.db import connection
 # -----------------------------
 # Auth-related views
 # -----------------------------
@@ -68,7 +128,7 @@ def logout_view(request):
 # Role-based dashboards
 # -----------------------------
 
-from django.db import connection
+
 
 def get_user_role(user_id):
     with connection.cursor() as cursor:
@@ -330,8 +390,6 @@ def ajax_upload_file(request):
 
 
 
-from .models import FolderUserRole, Document
-
 def get_visible_documents(user, folder):
     # Get roles for the user in this folder
     user_roles = FolderUserRole.objects.filter(user=user, folder=folder)
@@ -344,14 +402,7 @@ def get_visible_documents(user, folder):
     faculty_roles = user_roles.filter(role__name='Faculty', file__isnull=False)
     return Document.objects.filter(id__in=faculty_roles.values_list('file_id', flat=True))
 
-from django.utils.timezone import now
-from django.db.models import Q
-from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.timezone import now
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from .models import Folder, Document, Role, FolderUserRole
+
 
 @login_required
 def assign_folder_role(request):
@@ -456,8 +507,7 @@ def remove_role(request, user_role_id):
 #     role_id = int(role_id) if role_id is not None else 0
 #     return render(request, "profile.html", {"role_id": role_id})
 
-from django.shortcuts import render, get_object_or_404
-from .models import Folder, Document
+
 
 def edit_list(request):
     folders = Folder.objects.all()
@@ -475,9 +525,6 @@ def edit_dynamic_table(request, doc_id):
     document = get_object_or_404(Document, id=doc_id)
     return render(request, 'edit_dynamic_table.html', {'document': document})
 
-import json
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Document
 
 def edit_dynamic_table(request, doc_id):
     document = get_object_or_404(Document, id=doc_id)
@@ -548,25 +595,49 @@ def edit_dynamic_table(request, doc_id):
 
 
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from .models import Upload, UserRole, FolderUserRole
 
-import io
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from .models import Upload
-import pandas as pd
-import csv
-import openpyxl
-
+@login_required
 def history_index(request):
-    files = Upload.objects.all().order_by('-upload_time')
+    user = request.user
+
+    # Get user's role name
+    try:
+        role_name = UserRole.objects.select_related('role').get(user=user).role.role_name.lower()
+    except UserRole.DoesNotExist:
+        role_name = None
+
+    if role_name == "admin":
+        # Admin → see all uploads
+        files = Upload.objects.select_related('uploaded_by', 'folder', 'document').order_by('-upload_time')
+
+    else:
+        # Get folder IDs user has access to
+        folder_ids = FolderUserRole.objects.filter(
+            user=user,
+            folder__isnull=False
+        ).values_list('folder_id', flat=True)
+
+        # Get document IDs user has access to
+        file_ids = FolderUserRole.objects.filter(
+            user=user,
+            file__isnull=False
+        ).values_list('file_id', flat=True)
+
+        # Query uploads where either:
+        #   - Document is in allowed file_ids
+        #   - Folder is in allowed folder_ids
+        files = Upload.objects.select_related('uploaded_by', 'folder', 'document').filter(
+            Q(document_id__in=file_ids) | Q(folder_id__in=folder_ids)
+        ).order_by('-upload_time')
+
     return render(request, 'history_index.html', {'files': files})
 
-import csv
-import io
-from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse
-import openpyxl
-from .models import Upload
+
+
 
 def history_view_file(request, file_id):
     file = get_object_or_404(Upload, id=file_id)
@@ -598,11 +669,7 @@ def history_view_file(request, file_id):
 
     return render(request, 'history_view.html', {'file': file, 'rows': rows})
 
-import pandas as pd
-from io import BytesIO
-from django.shortcuts import get_object_or_404, render
-from .models import Upload
-import openpyxl
+
 
 def history_edit_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
@@ -639,10 +706,7 @@ def history_edit_file(request, file_id):
 
 
 
-import pandas as pd
-from io import BytesIO
-from django.shortcuts import get_object_or_404, redirect
-from .models import Upload
+
 
 def history_save_file(request, file_id):
     file = get_object_or_404(Upload, id=file_id)
@@ -686,10 +750,6 @@ def history_delete_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
     file_obj.delete()
     return redirect('history_index')
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
-from django.contrib import messages
-from .models import Folder, Document
 
 # Manage folders: list, add, delete
 def edit_folders(request):
