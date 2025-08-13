@@ -79,8 +79,8 @@ WSGI_APPLICATION = 'ddr_portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'DDR_COLLEGE_PROJECT',
-        'HOST': 'Riya-LAPTOP',
+        'NAME': 'ddr',
+        'HOST': 'LAPTOP-643V3CM2',
         'PORT': '',
 
         'OPTIONS': {
