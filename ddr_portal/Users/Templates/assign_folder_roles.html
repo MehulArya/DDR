@@ -197,72 +197,45 @@
       </ul>
     {% endif %}
 
+
     <form method="post">
-      {% csrf_token %}
-      <label>User:</label>
-      <select name="user_id" required>
-        {% for user in users %}
-          <option value="{{ user.id }}">{{ user.username }}</option>
-        {% endfor %}
-      </select>
+  {% csrf_token %}
 
-      <div id="folderContainer">
-        <label>Folder:</label>
-        <select name="folder_id" id="folderSelect" required>
-          {% for folder in folders %}
-            <option value="{{ folder.id }}">{{ folder.folder_name }}</option>
-          {% endfor %}
-        </select>
-      </div>
+  <!-- User -->
+  <label>User:</label>
+  <select name="user_id" required>
+    {% for user in users %}
+      <option value="{{ user.id }}">{{ user.username }}</option>
+    {% endfor %}
+  </select>
 
-      <label>Role:</label>
-      <select name="role_id" id="roleSelect" required>
-        {% for role in roles %}
-          <option value="{{ role.role_id }}">{{ role.role_name }}</option>
-        {% endfor %}
-      </select>
+  <!-- Role -->
+  <label>Role:</label>
+  <select name="role_id" id="roleSelect" required>
+    {% for role in roles %}
+      <option value="{{ role.role_id }}">{{ role.role_name }}</option>
+    {% endfor %}
+  </select>
 
-      <div id="fileContainer" style="display: none;">
-        <label>File:</label>
-        <select name="file_id" id="fileSelect"></select>
-      </div>
-
-      <button type="submit">Assign Role</button>
-    </form>
-
-    <h3>Existing Role Assignments</h3>
-    <table>
-      <tr>
-        <th>User</th>
-        <th>Folder</th>
-        <th>Role</th>
-        <th>File</th>
-        <th>Assigned At</th>
-        <th>Action</th>
-      </tr>
-      {% for a in assignments %}
-      <tr>
-        <td>{{ a.user.username }}</td>
-        <td>{% if a.folder %}{{ a.folder.folder_name }}{% else %}All Folders{% endif %}</td>
-        <td>{{ a.role.role_name }}</td>
-        <td>{% if a.file %}{{ a.file.title }}{% else %}All Files{% endif %}</td>
-        <td>{{ a.assigned_at }}</td>
-        <td>
-          {% if a.role.role_name|lower == "admin" %}
-            <a href="{% url 'remove_role' a.id %}"
-               onclick="return confirm('Are you sure?') && confirm('This is the LAST admin! Are you REALLY sure?')">
-               Remove
-            </a>
-          {% else %}
-            <a href="{% url 'remove_role' a.id %}"
-               onclick="return confirm('Are you sure you want to remove this role?')">
-               Remove
-            </a>
-          {% endif %}
-        </td>
-      </tr>
+  <!-- Folder (hidden until role != admin) -->
+  <div id="folderContainer" style="display: none;">
+    <label>Folder:</label>
+    <select name="folder_id" id="folderSelect" required>
+      {% for folder in folders %}
+        <option value="{{ folder.id }}">{{ folder.folder_name }}</option>
       {% endfor %}
-    </table>
+    </select>
+  </div>
+
+  <!-- File (only if faculty) -->
+  <div id="fileContainer" style="display: none;">
+    <label>File:</label>
+    <select name="file_id" id="fileSelect"></select>
+  </div>
+
+  <button type="submit">Assign Role</button>
+</form>
+
   </div>
 
 </body>

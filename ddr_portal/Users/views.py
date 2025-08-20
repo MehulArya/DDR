@@ -355,26 +355,23 @@ from .models import Folder, Document, Role, FolderUserRole
 
 @login_required
 def assign_folder_role(request):
-    # Get Admin role ID once to compare later
     admin_role_id = Role.objects.get(role_name__iexact="admin").role_id
 
     if request.method == "POST":
         user_id = request.POST.get("user_id")
         folder_id = request.POST.get("folder_id")
-        role_id = int(request.POST.get("role_id"))  # ensure int
-        file_id = request.POST.get("file_id") or None  # blank -> None
+        role_id = int(request.POST.get("role_id"))
+        file_id = request.POST.get("file_id") or None
 
         if user_id and role_id:
             try:
                 if role_id == admin_role_id:
-                    # Assign all folders
                     for folder in Folder.objects.all():
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
                             folder_id=folder.id,
                             role_id=role_id
                         )
-                    # Assign all files
                     for file in Document.objects.all():
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
@@ -383,7 +380,6 @@ def assign_folder_role(request):
                         )
                     messages.success(request, "Admin role assigned with full access.")
                 else:
-                    # Prevent duplicate assignments for non-admins
                     exists = FolderUserRole.objects.filter(
                         user_id=user_id,
                         folder_id=folder_id,
@@ -409,6 +405,24 @@ def assign_folder_role(request):
 
         return redirect('assign_folder_role')
 
+    # GET request → show form only
+    users = User.objects.all()
+    folders = Folder.objects.all()
+    roles = Role.objects.all()
+    documents = Document.objects.select_related('folder').all()
+
+    return render(request, "assign_folder_roles.html", {
+        "users": users,
+        "folders": folders,
+        "roles": roles,
+        "documents": documents,
+    })
+
+@login_required
+def folder_role_assignments(request):
+    assignments = FolderUserRole.objects.select_related("user", "folder", "role", "file").all()
+    return render(request, "folder_role_assignments.html", {"assignments": assignments})
+
     # GET request
     users = User.objects.exclude(is_superuser=True)  # remove admin from user dropdown
     folders = Folder.objects.all()
@@ -416,7 +430,7 @@ def assign_folder_role(request):
     documents = Document.objects.select_related('folder').all()
     assignments = FolderUserRole.objects.select_related('user', 'folder', 'role', 'file')
 
-    return render(request, "assign_roles.html", {
+    return render(request, "assign_folder_roles.html", {
         "users": users,
         "folders": folders,
         "roles": roles,
@@ -448,7 +462,7 @@ def remove_role(request, user_role_id):
 
     role_instance.delete()
     messages.success(request, "Role removed successfully.")
-    return redirect("assign_folder_role")
+    return redirect("folder_role_assignments")
 
 def profile_view(request):
     role_id = get_user_role_id(request.user.id)
