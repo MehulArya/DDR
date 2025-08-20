@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ file.filename }} - Preview</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #f5f7fa; color: #333; }
+        h1 { color: #4b6cb7; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; }
+        a { text-decoration: none; color: #0066cc; }
+    </style>
+</head>
+<body>
+    <h1>{{ file.filename }}</h1>
+    <a href="{% url 'history_index' %}">⬅️ Back to Dashboard</a>
+   
+
+    <h2>Preview: {{ file.file_name}}</h2>
+
+{% if message %}
+  <p style="color: orange;">{{ message }}</p>
+{% endif %}
+
+{% if rows %}
+<table border="1" cellpadding="5">
+  {% for row in rows %}
+    <tr>
+      {% for col in row %}
+        <td>{{ col }}</td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</table>
+{% endif %}
+    
+</body>
+</html>

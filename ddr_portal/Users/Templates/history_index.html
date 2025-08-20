@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>History Files</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+<h1>File History</h1>
+<table id="historyTable" class="display">
+    <thead>
+        <tr>
+            <th>File Name</th>
+            <th>Uploaded By</th>
+            <th>Upload Time</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for f in files %}
+        <tr>
+            <td>{{ f.file_name }}</td>
+            <td>{{ f.uploaded_by }}</td>
+            <td>{{ f.upload_time }}</td>
+            <td>
+                <a href="{% url 'history_view_file' f.id %}">View</a> |
+                <a href="{% url 'history_edit_file' f.id %}">Edit</a> |
+                <a href="{% url 'history_download_file' f.id %}">Download</a> |
+                <a href="{% url 'history_delete_file' f.id %}" onclick="return confirm('Delete this file?');">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+$(document).ready(function() {
+    $('#historyTable').DataTable();
+});
+</script>
+</body>
+</html>

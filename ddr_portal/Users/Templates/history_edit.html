@@ -1,0 +1,97 @@
+{% load custom_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit File</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+        }
+        button {
+            margin: 3px;
+        }
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+    <script>
+        function addRow() {
+            const tableBody = document.getElementById("editTableBody");
+            const colInputs = document.querySelectorAll("input[name='columns']");
+            const rowCount = tableBody.rows.length;
+
+            let newRow = tableBody.insertRow();
+            for (let i = 0; i < colInputs.length; i++) {
+                let colName = colInputs[i].value;
+                let newCell = newRow.insertCell(i);
+                newCell.innerHTML = `<input type="text" name="${colName}_${rowCount}" value="">`;
+            }
+
+            let actionCell = newRow.insertCell(colInputs.length);
+            actionCell.innerHTML = `<button type="button" onclick="deleteRow(this)">Delete</button>`;
+
+            document.querySelector("input[name='total_rows']").value = tableBody.rows.length;
+        }
+
+        function deleteRow(button) {
+            const row = button.closest("tr");
+            row.remove();
+            document.querySelector("input[name='total_rows']").value =
+                document.getElementById("editTableBody").rows.length;
+        }
+    </script>
+</head>
+<body>
+    <h2>Edit File</h2>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    {% if df %}
+    <form method="post" action="{% url 'history_save_file' file_id %}">
+        {% csrf_token %}
+        <input type="hidden" name="total_rows" value="{{ df|length }}">
+
+        {% for col in columns %}
+            <input type="hidden" name="columns" value="{{ col }}">
+        {% endfor %}
+
+        <table>
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="editTableBody">
+                {% for row in df %}
+                    <tr>
+                        {% for col in columns %}
+                            <td>
+                                <input type="text" name="{{ col }}_{{ forloop.parentloop.counter0 }}"
+                                       value="{{ row|get_item:col|default_if_none:'' }}">
+                            </td>
+                        {% endfor %}
+                        <td>
+                            <button type="button" onclick="deleteRow(this)">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <br>
+        <button type="button" onclick="addRow()">Add Row</button>
+        <button type="submit">Save Changes</button>
+    </form>
+    {% else %}
+        <p>⚠️ No data to show. Check if the file is empty or unreadable.</p>
+    {% endif %}
+</body>
+</html>

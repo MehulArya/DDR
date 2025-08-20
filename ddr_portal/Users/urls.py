@@ -1,6 +1,6 @@
 # your_app/urls.py
-from django.urls import path
 from . import views
+from django.urls import path
 from django.contrib.auth import views as auth_views
 
 
@@ -37,13 +37,13 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
 
     path('see-template/<int:doc_id>/', views.see_template, name='see_template'),
-    #these are used to upload the new folders
+   
     path('upload/', views.upload_folder_list, name='upload_folder_list'),  # → uses upload_file_list.html
 
-    # Step 2: Show documents in selected folder
+  
     path('upload/folder/<int:folder_id>/', views.upload_document_list, name='upload_document_list'),  # → uses upload_document_list.html
 
-    # Step 3: Upload file to specific document
+   
 
     path('upload/ajax/', views.ajax_upload_file, name='ajax_upload_file'),
     path('profile/', views.profile_view, name='profile'),
@@ -56,5 +56,13 @@ urlpatterns = [
     path('edit_dynamic_table/<int:doc_id>/', views.edit_dynamic_table, name='edit_dynamic_table'),
     path('edit_folders/', views.edit_folders, name='edit_folders'),
     path('edit_folders/<int:folder_id>/', views.edit_folder_documents, name='edit_folder_documents'),
-]
 
+
+    path('View History/', views.history_index, name='history_index'),
+    path('history/view/<int:file_id>/', views.history_view_file, name='history_view_file'),
+    path('history/edit/<int:file_id>/', views.history_edit_file, name='history_edit_file'),
+    path('history/save/<int:file_id>/', views.history_save_file, name='history_save_file'),
+    path('history/download/<int:file_id>/', views.history_download_file, name='history_download_file'),
+    path('history/delete/<int:file_id>/', views.history_delete_file, name='history_delete_file'),
+
+]
