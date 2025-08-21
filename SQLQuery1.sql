@@ -153,6 +153,7 @@ CREATE TABLE DOCUMENTS (
     folder_id INT,   
     dynamic_data NVARCHAR(MAX),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_deleted BIT NOT NULL DEFAULT 0,
     FOREIGN KEY (folder_id) REFERENCES FOLDERS(id)
 );
 
@@ -1879,4 +1880,3 @@ CREATE TABLE FOLDER_USER_ROLE (
     CONSTRAINT UQ_user_folder UNIQUE (user_id, folder_id, file_id)
 );
 GO
-
