@@ -233,12 +233,12 @@
       <h3>Columns</h3>
       <div id="columns-container">
         {% for col in columns %}
-          <div class="column-row">
-            <input type="text" name="col_name_{{ forloop.counter0 }}" value="{{ col.name }}" placeholder="Column Name" required>
-            <input type="text" name="col_type_{{ forloop.counter0 }}" value="{{ col.type }}" placeholder="Type" required>
-            <input type="text" name="col_constraints_{{ forloop.counter0 }}" value="{{ col.constraints|default:'' }}" placeholder="Constraints">
-            <button type="submit" name="remove_column" value="{{ forloop.counter0 }}" class="remove-btn">Remove</button>
-          </div>
+            <div class="column-row" style="margin-bottom: 5px;">
+                <input type="text" name="col_name_{{ forloop.counter0 }}" value="{{ col.name }}" placeholder="Column Name" required>
+                <input type="text" name="col_type_{{ forloop.counter0 }}" value="{{ col.type }}" placeholder="Type" required>
+                <input type="text" name="col_constraints_{{ forloop.counter0 }}" value="{{ col.constraints|default:'' }}" placeholder="Constraints">
+                <button type="submit" name="remove_column" value="{{ forloop.counter0 }}" class="remove-btn",onclick="return confirm('Are you sure you want to remove this column?');">Remove</button>
+            </div>
         {% endfor %}
       </div>
 

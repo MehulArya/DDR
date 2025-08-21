@@ -18,4 +18,3 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomLoginForm(AuthenticationForm):
     username = forms.CharField(label="Username")
     password = forms.CharField(label="Password", widget=forms.PasswordInput)
-

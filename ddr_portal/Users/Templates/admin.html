@@ -19,11 +19,11 @@
   <div class="sidebar" id="sidebar">
     <div class="logo">
             <img src="{% static 'images/skit_logo.jpg' %}" alt="SKIT Logo">
-
     </div>
     <ul>
       <li class="active"><i class="bi bi-house-door"></i> Dashboard</li>
-      <li><i class="bi bi-shield-lock"></i> View Permissions</li>
+      <li>
+        <a href="{% url 'folder_role_assignments' %}" style="text-decoration: none; color: inherit"><i class="bi bi-shield-lock"> View Permissions </i></a>
       <li>
         <a href="{% url 'profile' %}" style="text-decoration: none; color: inherit;">
           <i class="bi bi-person"></i> Profile
