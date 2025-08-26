@@ -187,14 +187,14 @@ def role_redirect(request):
 
 @login_required
 def folder_list(request):
-    folders = Folder.objects.filter(is_active=True)
+    folders = Folder.objects.filter(is_active=1)
     return render(request, 'folder_list.html', {'folders': folders})
 
 
-@login_required
 def folder_documents(request, folder_id):
-    folder = get_object_or_404(Folder, id=folder_id)
-    documents = Document.objects.filter(folder_id=folder.id)
+    folder = get_object_or_404(Folder, id=folder_id, is_active=True)
+    documents = Document.objects.filter(folder_id=folder.id, is_deleted=0)
+
     return render(request, 'documents.html', {
         'folder': folder,
         'documents': documents
@@ -204,9 +204,24 @@ def folder_documents(request, folder_id):
 # -----------------------------
 # Excel file download view
 #
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from openpyxl import Workbook
+from openpyxl.styles import Font
+import json
+
+from .models import Document
+
 @login_required
 def download_excel(request, doc_id):
-    document = get_object_or_404(Document, id=doc_id)
+    document = get_object_or_404(
+        Document,
+        id=doc_id,
+        is_deleted=False,
+        folder__is_active=True
+    )
+
     raw_data = document.dynamic_data
 
     try:
@@ -223,20 +238,21 @@ def download_excel(request, doc_id):
         first_key = next(iter(dynamic_data))
         columns = dynamic_data[first_key]["columns"]
 
-        # Create Excel
+        # Create Excel workbook
         wb = Workbook()
         ws = wb.active
         ws.title = document.title
         ws.sheet_properties.tabColor = "1072BA"
         ws.freeze_panes = "A2"
 
+        # Write column headers
         for index, col in enumerate(columns, start=1):
             name = col.get("name", "Unnamed")
             cell = ws.cell(row=1, column=index, value=name)
             cell.font = Font(bold=True)
             ws.column_dimensions[cell.column_letter].width = max(len(name) + 2, 20)
 
-        # Prepare response
+        # Prepare HTTP response
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
@@ -250,12 +266,13 @@ def download_excel(request, doc_id):
         return HttpResponse(f"JSON Decode Error: {je}", status=400)
 
     except KeyError as ke:
-        print(" Missing expected key:", ke)
+        print("Missing expected key:", ke)
         return HttpResponse(f"Missing expected key: {ke}", status=400)
 
     except Exception as e:
-        print(" Unexpected Error:", e)
+        print("Unexpected Error:", e)
         return HttpResponse(f"Unexpected Error: {e}", status=400)
+
 
 
 
@@ -282,9 +299,15 @@ def profile_view(request):
 def home_view(request):
     return render(request, 'home.html')
 
+
 @login_required
 def see_template(request, doc_id):
-    document = get_object_or_404(Document, id=doc_id)
+    document = get_object_or_404(
+        Document,
+        id=doc_id,
+        is_deleted=False,
+        folder__is_active=True
+    )
     raw_data = document.dynamic_data
 
     try:
@@ -324,11 +347,11 @@ def upload_folder_list(request):
 
     if is_admin:
         # Admin sees all folders
-        folders = Folder.objects.all()
+        folders = Folder.objects.filter(is_active=True)
     else:
         # Non-admin sees only assigned folders
         folders = Folder.objects.filter(
-            id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True)
+            id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True), is_active=True
         ).distinct()
 
     return render(request, 'upload_file_list.html', {'folders': folders})
@@ -348,8 +371,8 @@ def upload_document_list(request, folder_id):
         if not has_access:
             return HttpResponse("Unauthorized", status=403)
 
-    folder = get_object_or_404(Folder, id=folder_id)
-    documents = Document.objects.filter(folder_id=folder.id)
+    folder = get_object_or_404(Folder, id=folder_id, is_active=True)
+    documents = Document.objects.filter(folder_id=folder.id, is_deleted=False)
     return render(request, 'upload_document_list.html', {
         'folder': folder,
         'documents': documents
@@ -367,8 +390,8 @@ def ajax_upload_file(request):
         if not uploaded_file or not folder_id or not document_id:
             return JsonResponse({'success': False, 'error': 'Missing data'})
 
-        folder = get_object_or_404(Folder, id=folder_id)
-        document = get_object_or_404(Document, id=document_id)
+        folder = get_object_or_404(Folder, id=folder_id, is_active=True)
+        document = get_object_or_404(Document, id=document_id, is_deleted=False)
         file_blob = uploaded_file.read()
 
         Upload.objects.create(
@@ -396,11 +419,11 @@ def get_visible_documents(user, folder):
 
     # If the user is Head, return all documents
     if user_roles.filter(role__name='Head').exists():
-        return Document.objects.filter(folder=folder)
+        return Document.objects.filter(folder=folder, is_active=True, is_deleted=False)
 
     # If Faculty, return only assigned documents
-    faculty_roles = user_roles.filter(role__name='Faculty', file__isnull=False)
-    return Document.objects.filter(id__in=faculty_roles.values_list('file_id', flat=True))
+    faculty_roles = user_roles.filter(role__name='Faculty', file__isnull=False, is_active=True, is_deleted=False)
+    return Document.objects.filter(id__in=faculty_roles.values_list('file_id', flat=True), is_active=True, is_deleted=False)
 
 
 
@@ -417,18 +440,21 @@ def assign_folder_role(request):
         if user_id and role_id:
             try:
                 if role_id == admin_role_id:
-                    for folder in Folder.objects.all():
+                    # ✅ Only check is_active for Folder
+                    for folder in Folder.objects.filter(is_active=True):
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
                             folder_id=folder.id,
                             role_id=role_id
                         )
-                    for file in Document.objects.all():
+
+                    for file in Document.objects.filter(is_deleted=False):
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
                             file_id=file.id,
                             role_id=role_id
                         )
+
                     messages.success(request, "Admin role assigned with full access.")
                 else:
                     exists = FolderUserRole.objects.filter(
@@ -458,9 +484,23 @@ def assign_folder_role(request):
 
     # GET request → show form only
     users = User.objects.all()
-    folders = Folder.objects.all()
+    folders = Folder.objects.filter(is_active=True)
     roles = Role.objects.all()
-    documents = Document.objects.select_related('folder').all()
+    documents = Document.objects.filter(is_deleted=False).select_related("folder")
+
+    return render(request, "assign_folder_roles.html", {
+        "users": users,
+        "folders": folders,
+        "roles": roles,
+        "documents": documents,
+    })
+
+
+    # GET request → show form only
+    users = User.objects.all()
+    folders = Folder.objects.filter(is_active=True)
+    roles = Role.objects.all()
+    documents = Document.objects.filter(is_active=True, is_deleted=False).select_related("folder")
 
     return render(request, "assign_folder_roles.html", {
         "users": users,
@@ -515,33 +555,28 @@ def remove_role(request, user_role_id):
     messages.success(request, "Role removed successfully.")
     return redirect("folder_role_assignments")
 
-# def profile_view(request):
-#     role_id = get_user_role_id(request.user.id)
-#     print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
-#     role_id = int(role_id) if role_id is not None else 0
-#     return render(request, "profile.html", {"role_id": role_id})
+def profile_view(request):
+    role_id = get_user_role_id(request.user.id)
+    print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
+    role_id = int(role_id) if role_id is not None else 0
+    return render(request, "profile.html", {"role_id": role_id})
 
 
 
 def edit_list(request):
-    folders = Folder.objects.all()
+    folders = Folder.objects.filter(is_active=True)
     return render(request, 'edit_list.html', {'folders': folders})
 
 def folder_documents_edit(request, folder_id):
-    folder = get_object_or_404(Folder, id=folder_id)
-    documents = Document.objects.filter(folder=folder)
+    folder = get_object_or_404(Folder, id=folder_id, is_active=True)
+    documents = Document.objects.filter(folder=folder, is_deleted=False, folder__is_active=True)
     return render(request, 'folder_documents.html', {
         'folder': folder,
         'documents': documents
     })
 
 def edit_dynamic_table(request, doc_id):
-    document = get_object_or_404(Document, id=doc_id)
-    return render(request, 'edit_dynamic_table.html', {'document': document})
-
-
-def edit_dynamic_table(request, doc_id):
-    document = get_object_or_404(Document, id=doc_id)
+    document = get_object_or_404(Document, id=doc_id, is_deleted=False)
 
     # Parse dynamic_data JSON
     dynamic_data = {}
@@ -625,48 +660,51 @@ def history_index(request):
         role_name = None
 
     if role_name == "admin":
-        # Admin → see all uploads
-        files = Upload.objects.select_related('uploaded_by', 'folder', 'document').order_by('-upload_time')
+        files = Upload.objects.select_related('uploaded_by', 'folder', 'document').filter(
+            folder__is_active=True,
+            document__is_deleted=False
+        ).order_by('-upload_time')
 
     else:
-        # Get folder IDs user has access to
         folder_ids = FolderUserRole.objects.filter(
             user=user,
-            folder__isnull=False
+            folder__isnull=False,
+            folder__is_active=True
         ).values_list('folder_id', flat=True)
 
-        # Get document IDs user has access to
         file_ids = FolderUserRole.objects.filter(
             user=user,
-            file__isnull=False
+            file__isnull=False,
+            file__is_deleted=False
         ).values_list('file_id', flat=True)
 
-        # Query uploads where either:
-        #   - Document is in allowed file_ids
-        #   - Folder is in allowed folder_ids
         files = Upload.objects.select_related('uploaded_by', 'folder', 'document').filter(
-            Q(document_id__in=file_ids) | Q(folder_id__in=folder_ids)
+            Q(document_id__in=file_ids) | Q(folder_id__in=folder_ids),
+            folder__is_active=True,
+            document__is_deleted=False
         ).order_by('-upload_time')
 
     return render(request, 'history_index.html', {'files': files})
 
-
-
-
+@login_required
 def history_view_file(request, file_id):
-    file = get_object_or_404(Upload, id=file_id)
-    filename = file.file_name.lower()  # ✅ Use correct model field
+    file = get_object_or_404(
+        Upload,
+        id=file_id,
+        folder__is_active=True,
+        document__is_deleted=False
+    )
+
+    filename = file.file_name.lower()
     rows = []
 
     try:
         if filename.endswith('.csv'):
-            # Decode CSV file content from binary
             content = file.file_blob.decode('utf-8')
             reader = csv.reader(io.StringIO(content))
             rows = list(reader)
 
         elif filename.endswith('.xlsx'):
-            # Read XLSX file from binary
             in_memory_file = io.BytesIO(file.file_blob)
             wb = openpyxl.load_workbook(in_memory_file)
             sheet = wb.active
@@ -675,22 +713,29 @@ def history_view_file(request, file_id):
 
         else:
             return HttpResponse(
-                " File uploaded successfully but preview is only available for .csv or .xlsx files."
+                "File uploaded successfully but preview is only available for .csv or .xlsx files."
             )
 
     except Exception as e:
-        return HttpResponse(f" Error while reading file: {e}")
+        return HttpResponse(f"Error while reading file: {e}")
 
     return render(request, 'history_view.html', {'file': file, 'rows': rows})
 
 
 
+@login_required
 def history_edit_file(request, file_id):
-    file_obj = get_object_or_404(Upload, id=file_id)
-    extension = file_obj.file_name.lower().split('.')[-1]  # ✅ correct field
+    file_obj = get_object_or_404(
+        Upload,
+        id=file_id,
+        folder__is_active=True,
+        document__is_deleted=False
+    )
+
+    extension = file_obj.file_name.lower().split('.')[-1]
 
     try:
-        file_data = file_obj.file_blob  # ✅ correct field
+        file_data = file_obj.file_blob
         file_stream = BytesIO(file_data)
 
         if extension == 'csv':
@@ -722,11 +767,17 @@ def history_edit_file(request, file_id):
 
 
 
+@login_required
 def history_save_file(request, file_id):
-    file = get_object_or_404(Upload, id=file_id)
+    file = get_object_or_404(
+        Upload,
+        id=file_id,
+        folder__is_active=True,
+        document__is_deleted=False
+    )
+
     extension = file.file_name.lower().split('.')[-1]
 
-    # Recreate DataFrame from POST data
     rows = []
     columns = request.POST.getlist('columns')
     total_rows = int(request.POST.get('total_rows', 0))
@@ -737,38 +788,66 @@ def history_save_file(request, file_id):
 
     df = pd.DataFrame(rows, columns=columns)
 
-    if extension == 'csv':
-        file.file_blob = df.to_csv(index=False).encode('utf-8')
+    try:
+        if extension == 'csv':
+            file.file_blob = df.to_csv(index=False).encode('utf-8')
 
-    elif extension in ['xls', 'xlsx']:
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False)
-        file.file_blob = output.getvalue()
+        elif extension in ['xls', 'xlsx']:
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False)
+            file.file_blob = output.getvalue()
 
-    else:
-        # Unsupported format
-        return redirect('history_view_file', file_id=file.id)
+        else:
+            return redirect('history_view_file', file_id=file.id)
 
-    file.save()
+        file.save()
+
+    except Exception as e:
+        # Handle save errors gracefully
+        return redirect('history_edit_file', file_id=file.id)
+
     return redirect('history_view_file', file_id=file.id)
 
 
+from django.http import HttpResponse, Http404
+from django.shortcuts import get_object_or_404
+
 def history_download_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
-    response = HttpResponse(file_obj.file_blob, content_type=file_obj.mime_type)
-    response['Content-Disposition'] = f'attachment; filename="{file_obj.file_name}"'
+
+    # Ensure file has data
+    if not file_obj.file_blob:
+        raise Http404("File content is missing.")
+
+    content_type = file_obj.mime_type or 'application/octet-stream'
+
+    response = HttpResponse(file_obj.file_blob, content_type=content_type)
+    response['Content-Disposition'] = f'attachment; filename="{file_obj.file_name or "download"}"'
     return response
 
+
+@login_required
 def history_delete_file(request, file_id):
-    file_obj = get_object_or_404(Upload, id=file_id)
+    # get the user role (handle multiple cases safely)
+    user_role = UserRole.objects.filter(user=request.user).first()
+
+    file_obj = get_object_or_404(Upload, id=file_id, user_role=user_role)
     file_obj.delete()
+
     return redirect('history_index')
 
-# Manage folders: list, add, delete
+from django.utils import timezone
+from django.contrib import messages
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
+from .models import Folder
+
+@login_required
 def edit_folders(request):
     if request.method == "POST":
         action = request.POST.get("action")
+
         if action == "add":
             folder_name = request.POST.get("folder_name")
             category = request.POST.get("category")
@@ -778,28 +857,43 @@ def edit_folders(request):
                     category=category or None,
                     created_at=timezone.now(),
                     updated_at=timezone.now(),
-                    is_active=True
+                    is_active=True,
                 )
                 messages.success(request, "Folder added successfully.")
             else:
                 messages.error(request, "Folder name cannot be empty.")
+
         elif action == "delete":
             folder_id = request.POST.get("folder_id")
-            folder = Folder.objects.filter(id=folder_id).first()
+            folder = Folder.objects.filter(id=folder_id, is_active=True).first()
             if folder:
-                folder.delete()
-                messages.success(request, "Folder deleted successfully.")
+                # Soft delete folder
+                folder.is_active = False
+                folder.updated_at = timezone.now()
+                folder.save()
+
+                # Soft delete all related documents
+                Document.objects.filter(folder=folder, is_deleted=False).update(
+                    is_deleted=True,
+                )
+
+                messages.success(request, "Folder and its documents deleted successfully (soft delete).")
             else:
-                messages.error(request, "Folder not found.")
+                messages.error(request, "Folder not found or already deleted.")
+
         return redirect("edit_folders")
 
-    folders = Folder.objects.filter(is_active=True).order_by('folder_name')
+    # Show only active + not deleted folders
+    folders = Folder.objects.filter(is_active=True).order_by("folder_name")
     return render(request, "edit_folders.html", {"folders": folders})
 
 
-# Manage documents within a folder: list, add, delete
+
+# Manage documents within a folder: list, add, soft delete
+@login_required
 def edit_folder_documents(request, folder_id):
-    folder = get_object_or_404(Folder, id=folder_id)
+    folder = get_object_or_404(Folder, id=folder_id, is_active=True)  # ensure folder is active
+
     if request.method == "POST":
         if "add_document" in request.POST:
             title = request.POST.get("title")
@@ -810,7 +904,8 @@ def edit_folder_documents(request, folder_id):
                     description=description,
                     folder=folder,
                     dynamic_data="{}",  # empty JSON
-                    created_at=timezone.now()
+                    created_at=timezone.now(),
+                    is_deleted=False  # default to active
                 )
                 messages.success(request, "Document added successfully.")
             else:
@@ -819,17 +914,19 @@ def edit_folder_documents(request, folder_id):
 
         elif "delete_document" in request.POST:
             doc_id = request.POST.get("doc_id")
-            doc = Document.objects.filter(id=doc_id, folder=folder).first()
+            doc = Document.objects.filter(id=doc_id, folder=folder, is_deleted=False).first()
             if doc:
-                doc.delete()
-                messages.success(request, "Document deleted successfully.")
+                doc.is_deleted = True
+                doc.save(update_fields=["is_deleted"])
+                messages.success(request, "Document marked as deleted.")
             else:
-                messages.error(request, "Document not found.")
+                messages.error(request, "Document not found or already deleted.")
             return redirect("edit_folder_documents", folder_id=folder.id)
 
-    documents = Document.objects.filter(folder=folder)
+    # Only show non-deleted documents
+    documents = Document.objects.filter(folder=folder, is_deleted=False)
+
     return render(request, "edit_folder_documents.html", {
         "folder": folder,
         "documents": documents,
     })
-

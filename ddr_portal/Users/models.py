@@ -44,6 +44,7 @@ class Document(models.Model):
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE)
     dynamic_data = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'DOCUMENTS'
