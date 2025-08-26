@@ -64,5 +64,8 @@ urlpatterns = [
     path('history/save/<int:file_id>/', views.history_save_file, name='history_save_file'),
     path('history/download/<int:file_id>/', views.history_download_file, name='history_download_file'),
     path('history/delete/<int:file_id>/', views.history_delete_file, name='history_delete_file'),
+    path('activity-log/', views.activity_log_view, name='activity_log'),
+    path('history/restore/<int:file_id>/', views.history_restore_file, name='history_restore_file'),
+    path('serve-file/<int:file_id>/', views.serve_file, name='serve_file'),
 
 ]

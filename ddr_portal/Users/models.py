@@ -2,24 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Upload(models.Model):
-    id = models.AutoField(primary_key=True)
-    document = models.ForeignKey('Document', on_delete=models.CASCADE)
-    folder = models.ForeignKey('Folder', on_delete=models.CASCADE)
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField(auto_now_add=True)
-    file_name = models.CharField(max_length=255)
-    file_blob = models.BinaryField()
-    file_size = models.BigIntegerField(null=True, blank=True)
-    mime_type = models.CharField(max_length=255, null=True, blank=True)
-    sha256_hash = models.CharField(max_length=64, null=True, blank=True)
 
-    class Meta:
-        db_table = 'UPLOADS'
-        managed = False  # ✅ because you're using an existing SQL Server table
-
-    def __str__(self):
-        return self.file_name
 
 class Folder(models.Model):
     id = models.AutoField(primary_key=True)
@@ -65,13 +48,15 @@ class Upload(models.Model):
     file_size = models.BigIntegerField(null=True, blank=True)
     mime_type = models.CharField(max_length=255, null=True, blank=True)
     sha256_hash = models.CharField(max_length=64, null=True, blank=True)
-
+    is_deleted = models.BooleanField(default=False)
     class Meta:
         db_table = 'UPLOADS'
         managed = False
 
     def __str__(self):
         return self.file_name
+    def __str__(self):
+        return f"{self.file_name} ({'Deleted' if self.is_deleted else 'Active'})"
 
 
 
@@ -123,3 +108,30 @@ class FolderUserRole(models.Model):
         return " - ".join(parts)
 
 
+from django.utils import timezone
+
+class ActivityLog(models.Model):
+    ACTION_CHOICES = [
+        ("UPLOAD", "Uploaded"),
+        ("EDIT", "Edited"),
+        ("DELETE", "Deleted"),
+        ("RESTORE", "Restored"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    upload = models.ForeignKey(
+        'Upload',
+        on_delete=models.SET_NULL,  # don't delete log when upload is deleted
+        null=True,
+        blank=True
+    )
+    file_name = models.CharField(max_length=255, blank=True, null=True)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "Users_activitylog"
+
+    def __str__(self):
+        file_name = self.upload.file_name if self.upload else "[Deleted File]"
+        return f"{self.user.username} {self.get_action_display()} {file_name} on {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"

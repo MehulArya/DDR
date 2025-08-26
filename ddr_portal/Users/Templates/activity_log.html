@@ -1,0 +1,16 @@
+<table border="1">
+  <tr>
+    <th>User</th>
+    <th>File</th>
+    <th>Action</th>
+    <th>Timestamp</th>
+  </tr>
+  {% for log in logs %}
+  <tr>
+    <td>{{ log.user.username }}</td>
+    <td>{{ log.file_name }}</td>   <!-- ✅ Always show stored name -->
+    <td>{{ log.get_action_display }}</td>
+    <td>{{ log.timestamp }}</td>
+  </tr>
+  {% endfor %}
+</table>
