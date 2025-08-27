@@ -12,7 +12,7 @@
         button {
             margin: 3px;
         }
-        input[type="text"] {
+        input[type="text"], textarea {
             width: 100%;
             box-sizing: border-box;
         }
@@ -51,45 +51,58 @@
         <p style="color:red;">{{ error }}</p>
     {% endif %}
 
+    {# ✅ CSV / Excel Editing #}
     {% if df %}
-    <form method="post" action="{% url 'history_save_file' file_id %}">
-        {% csrf_token %}
-        <input type="hidden" name="total_rows" value="{{ df|length }}">
+        <form method="post" action="{% url 'history_save_file' file_id %}">
+            {% csrf_token %}
+            <input type="hidden" name="total_rows" value="{{ df|length }}">
 
-        {% for col in columns %}
-            <input type="hidden" name="columns" value="{{ col }}">
-        {% endfor %}
+            {% for col in columns %}
+                <input type="hidden" name="columns" value="{{ col }}">
+            {% endfor %}
 
-        <table>
-            <thead>
-                <tr>
-                    {% for col in columns %}
-                        <th>{{ col }}</th>
-                    {% endfor %}
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="editTableBody">
-                {% for row in df %}
+            <table>
+                <thead>
                     <tr>
                         {% for col in columns %}
-                            <td>
-                                <input type="text" name="{{ col }}_{{ forloop.parentloop.counter0 }}"
-                                       value="{{ row|get_item:col|default_if_none:'' }}">
-                            </td>
+                            <th>{{ col }}</th>
                         {% endfor %}
-                        <td>
-                            <button type="button" onclick="deleteRow(this)">Delete</button>
-                        </td>
+                        <th>Actions</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody id="editTableBody">
+                    {% for row in df %}
+                        <tr>
+                            {% for col in columns %}
+                                <td>
+                                    <input type="text" name="{{ col }}_{{ forloop.parentloop.counter0 }}"
+                                           value="{{ row|get_item:col|default_if_none:'' }}">
+                                </td>
+                            {% endfor %}
+                            <td>
+                                <button type="button" onclick="deleteRow(this)">Delete</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-        <br>
-        <button type="button" onclick="addRow()">Add Row</button>
-        <button type="submit">Save Changes</button>
-    </form>
+            <br>
+            <button type="button" onclick="addRow()">Add Row</button>
+            <button type="submit">Save Changes</button>
+        </form>
+
+    {# ✅ DOC / DOCX Editing #}
+    {% elif doc_data %}
+        <form method="post" action="{% url 'history_save_file' file_id %}">
+            {% csrf_token %}
+            <h3>Word Document Content</h3>
+            {% for para in doc_data %}
+                <textarea name="paragraphs" rows="3" class="form-control mb-2">{{ para }}</textarea><br>
+            {% endfor %}
+            <button type="submit">Save Changes</button>
+        </form>
+
     {% else %}
         <p>⚠️ No data to show. Check if the file is empty or unreadable.</p>
     {% endif %}

@@ -28,7 +28,7 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from .models import UserRole
+from .models import UserRole, ActivityLog
 from django.utils import timezone
 from .models import Folder, Document
 
@@ -191,6 +191,7 @@ def folder_list(request):
     return render(request, 'folder_list.html', {'folders': folders})
 
 
+@login_required
 def folder_documents(request, folder_id):
     folder = get_object_or_404(Folder, id=folder_id, is_active=True)
     documents = Document.objects.filter(folder_id=folder.id, is_deleted=0)
@@ -275,7 +276,6 @@ def download_excel(request, doc_id):
 
 
 
-
 @login_required
 def profile_view(request):
     user = request.user
@@ -298,7 +298,6 @@ def profile_view(request):
 
 def home_view(request):
     return render(request, 'home.html')
-
 
 @login_required
 def see_template(request, doc_id):
@@ -394,7 +393,7 @@ def ajax_upload_file(request):
         document = get_object_or_404(Document, id=document_id, is_deleted=False)
         file_blob = uploaded_file.read()
 
-        Upload.objects.create(
+        upload_instance = Upload.objects.create(
             document=document,
             folder=folder,
             uploaded_by=request.user,
@@ -404,6 +403,13 @@ def ajax_upload_file(request):
             mime_type=uploaded_file.content_type,
             sha256_hash=hashlib.sha256(file_blob).hexdigest()
         )
+        ActivityLog.objects.create(
+            user=request.user,
+            upload=upload_instance,
+            file_name=upload_instance.file_name,
+            action="UPLOAD"
+        )
+
 
         return JsonResponse({'success': True})
 
@@ -555,11 +561,11 @@ def remove_role(request, user_role_id):
     messages.success(request, "Role removed successfully.")
     return redirect("folder_role_assignments")
 
-def profile_view(request):
-    role_id = get_user_role_id(request.user.id)
-    print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
-    role_id = int(role_id) if role_id is not None else 0
-    return render(request, "profile.html", {"role_id": role_id})
+# def profile_view(request):
+#     role_id = get_user_role_id(request.user.id)
+#     print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
+#     role_id = int(role_id) if role_id is not None else 0
+#     return render(request, "profile.html", {"role_id": role_id})
 
 
 
@@ -666,18 +672,23 @@ def history_index(request):
         ).order_by('-upload_time')
 
     else:
+        # Get folder IDs user has access to
         folder_ids = FolderUserRole.objects.filter(
             user=user,
             folder__isnull=False,
             folder__is_active=True
         ).values_list('folder_id', flat=True)
 
+        # Get document IDs user has access to
         file_ids = FolderUserRole.objects.filter(
             user=user,
             file__isnull=False,
             file__is_deleted=False
         ).values_list('file_id', flat=True)
 
+        # Query uploads where either:
+        #   - Document is in allowed file_ids
+        #   - Folder is in allowed folder_ids
         files = Upload.objects.select_related('uploaded_by', 'folder', 'document').filter(
             Q(document_id__in=file_ids) | Q(folder_id__in=folder_ids),
             folder__is_active=True,
@@ -685,6 +696,13 @@ def history_index(request):
         ).order_by('-upload_time')
 
     return render(request, 'history_index.html', {'files': files})
+
+
+import csv, io, openpyxl
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+import mimetypes
+from .models import Upload
 
 @login_required
 def history_view_file(request, file_id):
@@ -700,28 +718,72 @@ def history_view_file(request, file_id):
 
     try:
         if filename.endswith('.csv'):
+            # ✅ CSV file read
             content = file.file_blob.decode('utf-8')
             reader = csv.reader(io.StringIO(content))
             rows = list(reader)
 
+            return render(request, 'history_view.html', {'file': file, 'rows': rows, 'file_type': 'csv'})
+
         elif filename.endswith('.xlsx'):
+            # ✅ XLSX file read
             in_memory_file = io.BytesIO(file.file_blob)
             wb = openpyxl.load_workbook(in_memory_file)
             sheet = wb.active
             for row in sheet.iter_rows(values_only=True):
                 rows.append([cell if cell is not None else '' for cell in row])
 
+            return render(request, 'history_view.html', {'file': file, 'rows': rows, 'file_type': 'xlsx'})
+
         else:
-            return HttpResponse(
-                "File uploaded successfully but preview is only available for .csv or .xlsx files."
-            )
+            # ✅ For PDF, PNG, JPG, PPTX etc → just show in iframe/image
+            return render(request, 'history_view.html', {'file': file, 'rows': None, 'file_type': 'other'})
 
     except Exception as e:
         return HttpResponse(f"Error while reading file: {e}")
 
-    return render(request, 'history_view.html', {'file': file, 'rows': rows})
 
 
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+import mimetypes
+from .models import Upload
+from django.http import Http404
+
+def serve_file(request, file_id):
+    file = get_object_or_404(Upload, id=file_id)
+    mime_type, _ = mimetypes.guess_type(file.file_name)
+    if mime_type is None:
+        mime_type = "application/octet-stream"
+
+    filename_lower = file.file_name.lower()
+
+    # ✅ PDFs and images → render inline
+    if mime_type in ["application/pdf"] or mime_type.startswith("image/"):
+        response = HttpResponse(file.file_blob, content_type=mime_type)
+        response["Content-Disposition"] = f'inline; filename="{file.file_name}"'
+        return response
+
+    # ✅ DOC/DOCX → view via Office Web Viewer
+    elif filename_lower.endswith(('.doc', '.docx')):
+        # build a public URL to serve the file
+        file_url = request.build_absolute_uri(f"/serve-file/{file.id}/?download=1")
+        office_viewer_url = f"https://view.officeapps.live.com/op/embed.aspx?src={file_url}"
+        return response
+
+    # ✅ Default → force download
+    else:
+        response = HttpResponse(file.file_blob, content_type=mime_type)
+        response["Content-Disposition"] = f'attachment; filename="{file.file_name}"'
+        return response
+
+
+
+from io import BytesIO
+import pandas as pd
+from docx import Document   # ✅ python-docx se
+from django.shortcuts import get_object_or_404, render
+from .models import Upload, ActivityLog   # ✅ sirf apne models
 
 @login_required
 def history_edit_file(request, file_id):
@@ -740,23 +802,49 @@ def history_edit_file(request, file_id):
 
         if extension == 'csv':
             df = pd.read_csv(file_stream)
+            if df.empty:
+                return render(request, 'history_edit.html', {'error': 'File is empty or unreadable.'})
+            context = {
+                'df': df.to_dict(orient='records'),
+                'columns': df.columns,
+                'file_id': file_id,
+                'file_type': 'csv'
+            }
+
         elif extension in ['xls', 'xlsx']:
             df = pd.read_excel(file_stream, engine='openpyxl')
+            if df.empty:
+                return render(request, 'history_edit.html', {'error': 'File is empty or unreadable.'})
+            context = {
+                'df': df.to_dict(orient='records'),
+                'columns': df.columns,
+                'file_id': file_id,
+                'file_type': 'excel'
+            }
+
+        elif extension in ['doc', 'docx']:
+            document = Document(file_stream)   # ✅ ab ye python-docx wala
+            doc_data = [para.text for para in document.paragraphs if para.text.strip()]
+            if not doc_data:
+                return render(request, 'history_edit.html', {'error': 'File is empty or unreadable.'})
+            context = {
+                'doc_data': doc_data,
+                'file_id': file_id,
+                'file_type': 'doc'
+            }
+
         else:
-            return render(request, 'history_edit.html', {
-                'error': 'Unsupported file format'
-            })
+            return render(request, 'history_edit.html', {'error': 'Unsupported file format'})
 
-        if df.empty:
-            return render(request, 'history_edit.html', {
-                'error': 'File is empty or unreadable.'
-            })
+        # ✅ Activity log
+        ActivityLog.objects.create(
+            user=request.user,
+            upload=file_obj,
+            file_name=file_obj.file_name,
+            action="EDIT"
+        )
 
-        return render(request, 'history_edit.html', {
-            'df': df.to_dict(orient='records'),
-            'columns': df.columns,
-            'file_id': file_id
-        })
+        return render(request, 'history_edit.html', context)
 
     except Exception as e:
         return render(request, 'history_edit.html', {
@@ -778,6 +866,7 @@ def history_save_file(request, file_id):
 
     extension = file.file_name.lower().split('.')[-1]
 
+    # Recreate DataFrame from POST data
     rows = []
     columns = request.POST.getlist('columns')
     total_rows = int(request.POST.get('total_rows', 0))
@@ -798,7 +887,23 @@ def history_save_file(request, file_id):
                 df.to_excel(writer, index=False)
             file.file_blob = output.getvalue()
 
+        elif extension in ['doc', 'docx']:
+            # ✅ Handle DOCX
+            paragraphs = request.POST.getlist("paragraphs")
+
+            doc = Document()
+            for p in paragraphs:
+                doc.add_paragraph(p)
+
+            output = BytesIO()
+            doc.save(output)
+            file.file_blob = output.getvalue()
+
+        elif extension in ['.pdf']:
+                # PDF handling → just render inline in iframe
+                return render(request, 'history_view.html', {'file': file, 'file_type': 'pdf'})
         else:
+            # Unsupported format
             return redirect('history_view_file', file_id=file.id)
 
         file.save()
@@ -807,7 +912,7 @@ def history_save_file(request, file_id):
         # Handle save errors gracefully
         return redirect('history_edit_file', file_id=file.id)
 
-    return redirect('history_view_file', file_id=file.id)
+        return redirect('history_view_file', file_id=file.id)
 
 
 from django.http import HttpResponse, Http404
@@ -829,11 +934,16 @@ def history_download_file(request, file_id):
 
 @login_required
 def history_delete_file(request, file_id):
-    # get the user role (handle multiple cases safely)
-    user_role = UserRole.objects.filter(user=request.user).first()
-
-    file_obj = get_object_or_404(Upload, id=file_id, user_role=user_role)
-    file_obj.delete()
+    file_obj = get_object_or_404(Upload, id=file_id)
+    file_obj.is_deleted = True
+    file_obj.save()
+    ActivityLog.objects.create(
+        user=request.user,
+        upload=file_obj,
+        file_name=file_obj.file_name,
+        action="DELETE",
+        timestamp=timezone.now()
+    )
 
     return redirect('history_index')
 
@@ -930,3 +1040,41 @@ def edit_folder_documents(request, folder_id):
         "folder": folder,
         "documents": documents,
     })
+
+
+
+from .models import ActivityLog
+
+@login_required
+def activity_log_view(request):
+    if request.user.role != 'admin':  # only admin can see log
+        return redirect('role_redirect')
+
+    logs = ActivityLog.objects.select_related("user", "document").order_by("-timestamp")
+    return render(request, "activity_log.html", {"logs": logs})
+
+
+
+@login_required
+def activity_log_view(request):
+    logs = ActivityLog.objects.select_related("user", "upload").order_by("-timestamp")
+
+    return render(request, "activity_log.html", {
+        "logs": logs
+    })
+
+
+def history_restore_file(request, file_id):
+    file_obj = get_object_or_404(Upload, id=file_id)
+    file_obj.is_deleted = False
+    file_obj.save()
+
+    ActivityLog.objects.create(
+        user=request.user,
+        upload=file_obj,
+        file_name=file_obj.file_name,
+        action="RESTORE",
+        timestamp=timezone.now()
+    )
+    return redirect('history_index')
+
