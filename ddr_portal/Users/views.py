@@ -432,7 +432,6 @@ def get_visible_documents(user, folder):
     return Document.objects.filter(id__in=faculty_roles.values_list('file_id', flat=True), is_active=True, is_deleted=False)
 
 
-
 @login_required
 def assign_folder_role(request):
     admin_role_id = Role.objects.get(role_name__iexact="admin").role_id
@@ -446,7 +445,6 @@ def assign_folder_role(request):
         if user_id and role_id:
             try:
                 if role_id == admin_role_id:
-                    # ✅ Only check is_active for Folder
                     for folder in Folder.objects.filter(is_active=True):
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
@@ -493,20 +491,6 @@ def assign_folder_role(request):
     folders = Folder.objects.filter(is_active=True)
     roles = Role.objects.all()
     documents = Document.objects.filter(is_deleted=False).select_related("folder")
-
-    return render(request, "assign_folder_roles.html", {
-        "users": users,
-        "folders": folders,
-        "roles": roles,
-        "documents": documents,
-    })
-
-
-    # GET request → show form only
-    users = User.objects.all()
-    folders = Folder.objects.filter(is_active=True)
-    roles = Role.objects.all()
-    documents = Document.objects.filter(is_active=True, is_deleted=False).select_related("folder")
 
     return render(request, "assign_folder_roles.html", {
         "users": users,
@@ -781,7 +765,7 @@ def serve_file(request, file_id):
 
 from io import BytesIO
 import pandas as pd
-from docx import Document   # ✅ python-docx se
+from docx import Document as DocxDocument   # ✅ python-docx se
 from django.shortcuts import get_object_or_404, render
 from .models import Upload, ActivityLog   # ✅ sirf apne models
 
@@ -823,7 +807,7 @@ def history_edit_file(request, file_id):
             }
 
         elif extension in ['doc', 'docx']:
-            document = Document(file_stream)   # ✅ ab ye python-docx wala
+            document = DocxDocument(file_stream)   # ✅ ab ye python-docx wala
             doc_data = [para.text for para in document.paragraphs if para.text.strip()]
             if not doc_data:
                 return render(request, 'history_edit.html', {'error': 'File is empty or unreadable.'})
@@ -891,7 +875,7 @@ def history_save_file(request, file_id):
             # ✅ Handle DOCX
             paragraphs = request.POST.getlist("paragraphs")
 
-            doc = Document()
+            doc = DocxDocument()
             for p in paragraphs:
                 doc.add_paragraph(p)
 

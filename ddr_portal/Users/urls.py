@@ -67,5 +67,4 @@ urlpatterns = [
     path('activity-log/', views.activity_log_view, name='activity_log'),
     path('history/restore/<int:file_id>/', views.history_restore_file, name='history_restore_file'),
     path('serve-file/<int:file_id>/', views.serve_file, name='serve_file'),
-
 ]
