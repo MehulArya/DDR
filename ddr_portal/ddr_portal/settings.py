@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Users',
+    'faculty',
 ]
 
 MIDDLEWARE = [
@@ -79,8 +80,8 @@ WSGI_APPLICATION = 'ddr_portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'ddr',
-        'HOST': 'Mehul-Laptop',
+        'NAME': 'DDR_COLLEGE_PROJECT',
+        'HOST': 'Riya-Laptop',
         'PORT': '',
 
         'OPTIONS': {

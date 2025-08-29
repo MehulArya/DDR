@@ -1879,4 +1879,20 @@ CREATE TABLE FOLDER_USER_ROLE (
 
     CONSTRAINT UQ_user_folder UNIQUE (user_id, folder_id, file_id)
 );
+
+CREATE TABLE Users_activitylog (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL,
+    upload_id INT NULL,
+    file_name NVARCHAR(255) NULL,
+    action NVARCHAR(20) NOT NULL,
+    timestamp DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+
+    CONSTRAINT FK_activitylog_user FOREIGN KEY (user_id)
+        REFERENCES auth_user(id) ON DELETE CASCADE,
+
+    CONSTRAINT FK_activitylog_upload FOREIGN KEY (upload_id)
+        REFERENCES uploads(id) ON DELETE SET NULL
+);
+
 GO
