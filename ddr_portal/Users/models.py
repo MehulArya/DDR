@@ -49,6 +49,7 @@ class Upload(models.Model):
     file_size = models.BigIntegerField(null=True, blank=True)
     mime_type = models.CharField(max_length=255, null=True, blank=True)
     sha256_hash = models.CharField(max_length=64, null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'UPLOADS'
