@@ -416,9 +416,6 @@ def ajax_upload_file(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
-
-
-
 def get_visible_documents(user, folder):
     # Get roles for the user in this folder
     user_roles = FolderUserRole.objects.filter(user=user, folder=folder)
