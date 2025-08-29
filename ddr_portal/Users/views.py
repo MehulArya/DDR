@@ -194,7 +194,7 @@ def folder_list(request):
 @login_required
 def folder_documents(request, folder_id):
     folder = get_object_or_404(Folder, id=folder_id, is_active=True)
-    documents = Document.objects.filter(folder_id=folder.id, is_deleted=0)
+    documents = Document.objects.filter(folder_id=folder.id, is_deleted=False, folder__is_active=True)
 
     return render(request, 'documents.html', {
         'folder': folder,
@@ -425,7 +425,7 @@ def get_visible_documents(user, folder):
 
     # If the user is Head, return all documents
     if user_roles.filter(role__name='Head').exists():
-        return Document.objects.filter(folder=folder, is_active=True, is_deleted=False)
+        return Document.objects.filter(folder=folder, is_active=True)
 
     # If Faculty, return only assigned documents
     faculty_roles = user_roles.filter(role__name='Faculty', file__isnull=False, is_active=True, is_deleted=False)
@@ -765,9 +765,9 @@ def serve_file(request, file_id):
 
 from io import BytesIO
 import pandas as pd
-from docx import Document as DocxDocument   # ✅ python-docx se
+from docx import Document as DocxDocument
 from django.shortcuts import get_object_or_404, render
-from .models import Upload, ActivityLog   # ✅ sirf apne models
+from .models import Upload, ActivityLog
 
 @login_required
 def history_edit_file(request, file_id):
