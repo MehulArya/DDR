@@ -142,7 +142,7 @@
     <div class="right-side">
       <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
       <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
-      
+
     </div>
   </div>
 
@@ -160,7 +160,8 @@
     <li data-title="{{ doc.title|lower }}">
       📄 {{ doc.title }} -
       <a href="{% url 'download_excel' doc.id %}">Download Excel</a> |
-      <a href="{% url 'see_template' doc.id %}">See Template</a>
+      <a href="{% url 'see_template' doc.id %}">See Template</a> |
+      <a href="{% url 'uploaded_files' doc.id %}" class="btn">View Uploaded Files</a>
     </li>
   {% empty %}
     <li>No documents found in this folder.</li>

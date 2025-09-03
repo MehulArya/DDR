@@ -6,34 +6,93 @@
     <meta charset="UTF-8">
     <title>{{ file.file_name }} - Preview</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #f5f7fa; color: #333; }
-        h1 { color: #4b6cb7; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #f0f0f0; }
-        a { text-decoration: none; color: #0066cc; }
-        iframe { width: 100%; height: 90vh; border: none; margin-top: 20px; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 20px;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #4b6cb7;
+            margin-bottom: 10px;
+        }
+        a.back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #4b6cb7;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        a.back-link:hover {
+            text-decoration: underline;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background: #f0f2f5;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background: #fafafa;
+        }
+        p.message {
+            color: orange;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <h1>{{ file.file_name }}</h1>
-    <a href="{% url 'history_index' %}">⬅️ Back to Dashboard</a>
+    <div class="container">
+        <a href="{% url 'history_index' %}" class="back-link">⬅ Back to Dashboard</a>
+        <h1>📄 {{ file.file_name }}</h1>
 
-    <h2>Preview</h2>
+        <h2>Preview</h2>
 
-    {% if message %}
-        <p style="color: orange;">{{ message }}</p>
-    {% endif %}
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
 
-
+        {% if headers %}
         <table>
-            {% for row in rows %}
-            <tr>
-                {% for col in row %}
-                <td>{{ col }}</td>
+            <thead>
+                <tr>
+                    {% for header in headers %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for col in row %}
+                        <td>{{ col }}</td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
+            </tbody>
         </table>
+        {% else %}
+            <p>No data to preview.</p>
+        {% endif %}
+    </div>
 </body>
 </html>

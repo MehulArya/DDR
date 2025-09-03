@@ -1059,3 +1059,73 @@ def history_restore_file(request, file_id):
     )
     return redirect('history_index')
 
+from django.urls import reverse
+def download_file(request, file_id):
+    file_obj = get_object_or_404(Upload, id=file_id, is_deleted=False)
+    response = HttpResponse(file_obj.file_blob, content_type=file_obj.mime_type)
+    response['Content-Disposition'] = f'attachment; filename="{file_obj.file_name}"'
+    return response
+
+
+def uploaded_files(request, document_id):
+    document = get_object_or_404(Document, id=document_id)
+    files = Upload.objects.filter(document=document, is_deleted=False)
+
+    return render(request, 'uploaded_files.html', {
+        'document': document,
+        'files': files
+    })
+
+import io, csv, openpyxl
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from .models import Upload
+
+@login_required
+def file_preview(request, file_id):
+    file = get_object_or_404(
+        Upload,
+        id=file_id,
+        folder__is_active=True,
+        document__is_deleted=False
+    )
+
+    filename = file.file_name.lower()
+    rows = []
+
+    try:
+        if filename.endswith('.csv'):
+            content = file.file_blob.decode('utf-8')
+            reader = csv.reader(io.StringIO(content))
+            rows = list(reader)
+
+            return render(request, 'preview.html', {
+                'file': file,
+                'rows': rows,
+                'file_type': 'csv'
+            })
+
+        elif filename.endswith('.xlsx'):
+            in_memory_file = io.BytesIO(file.file_blob)
+            wb = openpyxl.load_workbook(in_memory_file)
+            sheet = wb.active
+            for row in sheet.iter_rows(values_only=True):
+                rows.append([cell if cell is not None else '' for cell in row])
+
+            return render(request, 'preview.html', {
+                'file': file,
+                'rows': rows,
+                'file_type': 'xlsx'
+            })
+
+        else:
+            return render(request, 'preview.html', {
+                'file': file,
+                'rows': None,
+                'file_type': 'other'
+            })
+
+    except Exception as e:
+        return HttpResponse(f"Error while reading file: {e}", status=500)
+
