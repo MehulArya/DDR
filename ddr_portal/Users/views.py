@@ -739,41 +739,6 @@ def history_view_file(request, file_id):
 
 
 
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
-import mimetypes
-from .models import Upload
-from django.http import Http404
-
-def serve_file(request, file_id):
-    file = get_object_or_404(Upload, id=file_id)
-    mime_type, _ = mimetypes.guess_type(file.file_name)
-    if mime_type is None:
-        mime_type = "application/octet-stream"
-
-    filename_lower = file.file_name.lower()
-
-    # ✅ PDFs and images → render inline
-    if mime_type in ["application/pdf"] or mime_type.startswith("image/"):
-        response = HttpResponse(file.file_blob, content_type=mime_type)
-        response["Content-Disposition"] = f'inline; filename="{file.file_name}"'
-        return response
-
-    # ✅ DOC/DOCX → view via Office Web Viewer
-    elif filename_lower.endswith(('.doc', '.docx')):
-        # build a public URL to serve the file
-        file_url = request.build_absolute_uri(f"/serve-file/{file.id}/?download=1")
-        office_viewer_url = f"https://view.officeapps.live.com/op/embed.aspx?src={file_url}"
-        return response
-
-    # ✅ Default → force download
-    else:
-        response = HttpResponse(file.file_blob, content_type=mime_type)
-        response["Content-Disposition"] = f'attachment; filename="{file.file_name}"'
-        return response
-
-
-
 from io import BytesIO
 import pandas as pd
 from docx import Document as DocxDocument
@@ -817,17 +782,6 @@ def history_edit_file(request, file_id):
                 'file_type': 'excel'
             }
 
-        elif extension in ['doc', 'docx']:
-            document = DocxDocument(file_stream)   # ✅ ab ye python-docx wala
-            doc_data = [para.text for para in document.paragraphs if para.text.strip()]
-            if not doc_data:
-                return render(request, 'history_edit.html', {'error': 'File is empty or unreadable.'})
-            context = {
-                'doc_data': doc_data,
-                'file_id': file_id,
-                'file_type': 'doc'
-            }
-
         else:
             return render(request, 'history_edit.html', {'error': 'Unsupported file format'})
 
@@ -857,62 +811,43 @@ def history_save_file(request, file_id):
     )
 
     extension = file.file_name.lower().split('.')[-1]
-    rows, headers = [], []
 
     try:
         if extension in ['csv', 'xls', 'xlsx']:
-            # Recreate DataFrame from POST data
-            rows = []
+            # ✅ Recreate DataFrame from POST data
             headers = request.POST.getlist('columns')
             total_rows = int(request.POST.get('total_rows', 0))
 
+            rows = []
             for i in range(total_rows):
                 row = [request.POST.get(f'{col}_{i}', '') for col in headers]
                 rows.append(row)
 
             df = pd.DataFrame(rows, columns=headers)
 
-            # Save updated file_blob
+            # ✅ Save updated file_blob
             if extension == 'csv':
-                file.file_blob = df.to_csv(index=False).encode('utf-8')
-            else:  # Excel
+                file.file_blob = df.to_csv(index=False, header=True).encode('utf-8')
+            else:  # Excel (xls / xlsx)
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                    df.to_excel(writer, index=False)
+                    df.to_excel(writer, index=False, header=True)
                 file.file_blob = output.getvalue()
 
-        elif extension in ['doc', 'docx']:
-            paragraphs = request.POST.getlist("paragraphs")
-            doc = DocxDocument()
-            for p in paragraphs:
-                doc.add_paragraph(p)
-            output = BytesIO()
-            doc.save(output)
-            file.file_blob = output.getvalue()
+            file.save()
 
-        elif extension == 'pdf':
-            return render(request, 'history_view.html', {
-                'file': file,
-                'file_type': 'pdf'
-            })
+            # ✅ Instead of going back → show updated preview
+            return redirect('history_edit_file', file_id=file.id)
 
         else:
-            return redirect('history_view_file', file_id=file.id)
-
-        # ✅ Save changes
-        file.save()
-
-        # ✅ Instead of redirecting → render edit template again
-        return render(request, 'history_edit.html', {
-            'file': file,
-            'headers': headers,
-            'rows': rows,
-            'message': "✅ Changes saved successfully!"
-        })
+            return redirect('history_edit_file', file_id=file.id)
 
     except Exception as e:
         print("Error while saving file:", e)
         return redirect('history_edit_file', file_id=file.id)
+
+
+
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
