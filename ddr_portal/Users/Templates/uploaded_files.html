@@ -1,63 +1,260 @@
+<!--{% load custom_tags %}-->
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Uploaded Files for {{ document.title }}</title>-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">-->
+<!--  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">-->
+<!--  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+<!--  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>-->
+<!--  <style>-->
+<!--    body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }-->
+<!--    .container { margin-top: 40px; max-width: 1100px; }-->
+<!--    .card { border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 20px; }-->
+<!--    table, th, td { border: 1px solid #ddd; border-collapse: collapse; padding: 6px; }-->
+<!--    th { background-color: #f1f1f1; }-->
+<!--  </style>-->
+<!--  <script>-->
+<!--    $(document).ready(function () {-->
+<!--      $('#filesTable').DataTable();-->
+<!--    });-->
+<!--  </script>-->
+<!--</head>-->
+<!--<body>-->
+<!--  <div class="container">-->
+<!--    <div class="card">-->
+<!--      <h2 class="mb-4">📂 Uploaded Files for Document: <span class="fw-semibold">{{ document.title }}</span></h2>-->
+
+<!--      {% if files %}-->
+<!--      <table id="filesTable" class="display table table-striped">-->
+<!--        <thead>-->
+<!--          <tr>-->
+<!--            <th>File Name</th>-->
+<!--            <th>Size</th>-->
+<!--            <th>Uploaded By</th>-->
+<!--            <th>Uploaded At</th>-->
+<!--            <th>Actions</th>-->
+<!--          </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--          {% for file in files %}-->
+<!--          <tr>-->
+<!--            <td>{{ file.file_name }}</td>-->
+<!--            <td>{{ file.file_size|default:"Unknown" }} bytes</td>-->
+<!--            <td>{{ file.uploaded_by }}</td>-->
+<!--            <td>{{ file.upload_time }}</td>-->
+<!--            <td>-->
+<!--              <a href="{% url 'file_preview' file.id %}" class="btn btn-sm btn-secondary">👁 View</a>-->
+<!--              <a href="{% url 'history_download_file' file.id %}" class="btn btn-sm btn-success">⬇ Download</a>-->
+<!--            </td>-->
+<!--          </tr>-->
+<!--          {% endfor %}-->
+<!--        </tbody>-->
+<!--      </table>-->
+<!--      {% else %}-->
+<!--        <p class="text-warning">⚠ No files uploaded for this document.</p>-->
+<!--      {% endif %}-->
+
+<!--      <a href="{% url 'folder_list' %}" class="btn btn-link mt-3">← Back to Folders</a>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</body>-->
+<!--</html>-->
+
 {% load custom_tags %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Uploaded Files for {{ document.title }}</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Uploaded Files - {{ document.title }}</title>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <style>
-    body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-    .container { margin-top: 40px; max-width: 1100px; }
-    .card { border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); padding: 20px; }
-    table, th, td { border: 1px solid #ddd; border-collapse: collapse; padding: 6px; }
-    th { background-color: #f1f1f1; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      height: 70px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .left-side {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-placeholder {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: #eee;
+    }
+
+    .logo-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .search-box input {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+      width: 320px;
+      font-size: 14px;
+    }
+
+    .right-side {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-right: 40px;
+    }
+
+    .right-side i {
+      font-size: 22px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .breadcrumbs {
+      padding: 20px 30px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .breadcrumbs a {
+      text-decoration: none;
+      color: #003973;
+      margin-right: 5px;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .content-section {
+      background-color: #fff;
+      margin: 30px auto 40px auto;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 95%;
+    }
+
+    h2 {
+      color: #003973;
+      margin-bottom: 20px;
+    }
+
+    /* ✅ Hover row effect */
+    #filesTable tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    #filesTable tbody tr:hover {
+      background-color: #f1f5ff !important;
+      cursor: pointer;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
   </style>
   <script>
     $(document).ready(function () {
-      $('#filesTable').DataTable();
+      var table = $('#filesTable').DataTable();
+
+      // 🔍 Enable search via top search bar
+      $('#fileSearch').on('keyup', function() {
+        table.search(this.value).draw();
+      });
+
+      // ✅ Make entire row clickable (redirect to preview)
+      $('#filesTable tbody').on('click', 'tr', function (e) {
+        // Avoid triggering when clicking on buttons
+        if (!$(e.target).is('a, button, i')) {
+          var previewUrl = $(this).data('preview-url');
+          if (previewUrl) {
+            window.location.href = previewUrl;
+          }
+        }
+      });
     });
   </script>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h2 class="mb-4">📂 Uploaded Files for Document: <span class="fw-semibold">{{ document.title }}</span></h2>
 
-      {% if files %}
-      <table id="filesTable" class="display table table-striped">
-        <thead>
-          <tr>
-            <th>File Name</th>
-            <th>Size</th>
-            <th>Uploaded By</th>
-            <th>Uploaded At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for file in files %}
-          <tr>
-            <td>{{ file.file_name }}</td>
-            <td>{{ file.file_size|default:"Unknown" }} bytes</td>
-            <td>{{ file.uploaded_by }}</td>
-            <td>{{ file.upload_time }}</td>
-            <td>
-              <a href="{% url 'file_preview' file.id %}" class="btn btn-sm btn-secondary">👁 View</a>
-              <a href="{% url 'history_download_file' file.id %}" class="btn btn-sm btn-success">⬇ Download</a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-        <p class="text-warning">⚠ No files uploaded for this document.</p>
-      {% endif %}
+  <!-- ✅ Top Bar -->
+  <div class="top-bar">
+    <div class="left-side">
+      <div class="logo-placeholder">
+        <img src="{% static 'images/skit_logo.jpg' %}" alt="Logo">
+      </div>
+      <div class="search-box">
+        <input type="text" id="fileSearch" placeholder="Search files...">
+      </div>
+    </div>
 
-      <a href="{% url 'folder_list' %}" class="btn btn-link mt-3">← Back to Folders</a>
+    <div class="right-side">
+      <i class="bi bi-house-door" onclick="location.href='{% url 'admin' %}'"></i>
+      <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
     </div>
   </div>
+
+  <!-- ✅ Breadcrumbs -->
+  <div class="breadcrumbs">
+    <a href="{% url 'admin' %}">Dashboard</a> >
+    <a href="{% url 'folder_list' %}">Folders</a> >
+    <span>Uploaded Files for {{ document.title }}</span>
+  </div>
+
+  <!-- ✅ Content Section -->
+  <div class="content-section">
+    <h2>📂 Uploaded Files for: <span class="fw-semibold">{{ document.title }}</span></h2>
+
+    {% if files %}
+    <table id="filesTable" class="display table table-striped">
+      <thead>
+        <tr>
+          <th>File Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in files %}
+        <tr data-preview-url="{% url 'file_preview' file.id %}">
+          <td>{{ file.file_name }}</td>
+          <td>
+            <a href="{% url 'file_preview' file.id %}" class="btn btn-sm btn-secondary">👁 View</a>
+            <a href="{% url 'history_download_file' file.id %}" class="btn btn-sm btn-success">⬇ Download</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-warning">⚠ No files uploaded for this document.</p>
+    {% endif %}
+
+    <a href="{% url 'folder_list' %}" class="btn btn-link mt-3">← Back to Folders</a>
+  </div>
+
 </body>
 </html>
