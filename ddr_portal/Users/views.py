@@ -761,7 +761,6 @@ def serve_file(request, file_id):
 
 
 from io import BytesIO
-import pandas as pd
 from docx import Document as DocxDocument
 from django.shortcuts import get_object_or_404, render
 from .models import Upload, ActivityLog
@@ -804,7 +803,7 @@ def history_edit_file(request, file_id):
             }
 
         elif extension in ['doc', 'docx']:
-            document = DocxDocument(file_stream)   # ✅ ab ye python-docx wala
+            document = DocxDocument(file_stream)
             doc_data = [para.text for para in document.paragraphs if para.text.strip()]
             if not doc_data:
                 return render(request, 'history_edit.html', {'error': 'File is empty or unreadable.'})
@@ -880,7 +879,7 @@ def history_save_file(request, file_id):
             doc.save(output)
             file.file_blob = output.getvalue()
 
-        elif extension in ['.pdf']:
+        elif extension in ['pdf']:
                 # PDF handling → just render inline in iframe
                 return render(request, 'history_view.html', {'file': file, 'file_type': 'pdf'})
         else:
@@ -888,12 +887,11 @@ def history_save_file(request, file_id):
             return redirect('history_view_file', file_id=file.id)
 
         file.save()
+        return redirect('history_edit_file', file_id=file.id)
 
     except Exception as e:
         # Handle save errors gracefully
         return redirect('history_edit_file', file_id=file.id)
-
-        return redirect('history_view_file', file_id=file.id)
 
 
 from django.http import HttpResponse, Http404
