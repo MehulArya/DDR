@@ -31,9 +31,6 @@
         <thead>
           <tr>
             <th>File Name</th>
-            <th>Size</th>
-            <th>Uploaded By</th>
-            <th>Uploaded At</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -41,9 +38,6 @@
           {% for file in files %}
           <tr>
             <td>{{ file.file_name }}</td>
-            <td>{{ file.file_size|default:"Unknown" }} bytes</td>
-            <td>{{ file.uploaded_by }}</td>
-            <td>{{ file.upload_time }}</td>
             <td>
               <a href="{% url 'file_preview' file.id %}" class="btn btn-sm btn-secondary">👁 View</a>
               <a href="{% url 'history_download_file' file.id %}" class="btn btn-sm btn-success">⬇ Download</a>
