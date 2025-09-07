@@ -8,7 +8,21 @@
   <style>
     body { font-family: 'Segoe UI', sans-serif; background-color: #f7f9fc; margin: 0; }
     .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 30px; background: white; border-bottom: 1px solid #ddd; height: 70px; }
-    .right-side i { font-size: 22px; color: #333; cursor: pointer; }
+
+    .left-side { display: flex; align-items: center; gap: 20px; }
+    .logo-placeholder img { height: 48px; border-radius: 50%; }
+
+    .search-box input {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+      width: 280px;
+      font-size: 15px;
+    }
+
+    .right-side i { font-size: 22px; color: #333; cursor: pointer; margin-left: 20px; }
+
     .table-section { background-color: #fff; margin: 30px 100px; padding: 25px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     table th, table td { border: 1px solid #ddd; padding: 10px; font-size: 14px; text-align: left; }
@@ -22,7 +36,10 @@
   <div class="top-bar">
     <div class="left-side">
       <div class="logo-placeholder">
-        <img src="{% static 'images/skit_logo.jpg' %}" alt="SKIT Logo" style="height: 48px; border-radius: 50%;">
+        <img src="{% static 'images/skit_logo.jpg' %}" alt="SKIT Logo">
+      </div>
+      <div class="search-box">
+        <input type="text" id="fileSearch" placeholder="Search...">
       </div>
     </div>
     <div class="right-side">
@@ -39,7 +56,7 @@
   <!-- Table Section -->
   <div class="table-section">
     <h2>Existing Role Assignments</h2>
-    <table>
+    <table id="roleTable">
       <tr>
         <th>User</th>
         <th>Folder</th>
@@ -72,6 +89,19 @@
       {% endfor %}
     </table>
   </div>
+
+  <!-- 🔎 Search Script -->
+  <script>
+    document.getElementById("fileSearch").addEventListener("keyup", function() {
+      let filter = this.value.toLowerCase();
+      let rows = document.querySelectorAll("#roleTable tr:not(:first-child)");
+
+      rows.forEach(row => {
+        let text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    });
+  </script>
 
 </body>
 </html>
