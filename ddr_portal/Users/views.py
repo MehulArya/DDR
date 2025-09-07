@@ -695,33 +695,48 @@ def history_view_file(request, file_id):
     )
 
     filename = file.file_name.lower()
-    rows = []
+    headers, rows = [], []
 
     try:
         if filename.endswith('.csv'):
-            # ✅ CSV file read
+            # Read CSV
             content = file.file_blob.decode('utf-8')
-            reader = csv.reader(io.StringIO(content))
-            rows = list(reader)
-
-            return render(request, 'history_view.html', {'file': file, 'rows': rows, 'file_type': 'csv'})
+            reader = list(csv.reader(io.StringIO(content)))
+            if reader:
+                headers = reader[0]         # first row = headers
+                rows = reader[1:]           # remaining rows = data
 
         elif filename.endswith('.xlsx'):
-            # ✅ XLSX file read
+            # Read Excel
             in_memory_file = io.BytesIO(file.file_blob)
-            wb = openpyxl.load_workbook(in_memory_file)
+            wb = openpyxl.load_workbook(in_memory_file, data_only=True)
             sheet = wb.active
-            for row in sheet.iter_rows(values_only=True):
-                rows.append([cell if cell is not None else '' for cell in row])
+            data = list(sheet.iter_rows(values_only=True))
 
-            return render(request, 'history_view.html', {'file': file, 'rows': rows, 'file_type': 'xlsx'})
+            if data:
+                headers = [str(cell) if cell is not None else '' for cell in data[0]]
+                rows = [
+                    [str(cell) if cell is not None else '' for cell in row]
+                    for row in data[1:]
+                ]
 
         else:
-            # ✅ For PDF, PNG, JPG, PPTX etc → just show in iframe/image
-            return render(request, 'history_view.html', {'file': file, 'rows': None, 'file_type': 'other'})
+            return render(request, 'history_view.html', {
+                'file': file,
+                'headers': None,
+                'rows': None,
+                'message': "Preview not supported for this file type."
+            })
+
+        return render(request, 'history_view.html', {
+            'file': file,
+            'headers': headers,
+            'rows': rows
+        })
 
     except Exception as e:
         return HttpResponse(f"Error while reading file: {e}")
+
 
 
 
@@ -761,6 +776,7 @@ def serve_file(request, file_id):
 
 
 from io import BytesIO
+import pandas as pd
 from docx import Document as DocxDocument
 from django.shortcuts import get_object_or_404, render
 from .models import Upload, ActivityLog
@@ -845,52 +861,56 @@ def history_save_file(request, file_id):
     )
 
     extension = file.file_name.lower().split('.')[-1]
-
-    # Recreate DataFrame from POST data
-    rows = []
-    columns = request.POST.getlist('columns')
-    total_rows = int(request.POST.get('total_rows', 0))
-
-    for i in range(total_rows):
-        row = [request.POST.get(f'{col}_{i}', '') for col in columns]
-        rows.append(row)
-
-    df = pd.DataFrame(rows, columns=columns)
+    rows, headers = [], []
 
     try:
-        if extension == 'csv':
-            file.file_blob = df.to_csv(index=False).encode('utf-8')
+        if extension in ['csv', 'xls', 'xlsx']:
+            # Recreate DataFrame from POST data
+            rows = []
+            headers = request.POST.getlist('columns')
+            total_rows = int(request.POST.get('total_rows', 0))
 
-        elif extension in ['xls', 'xlsx']:
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                df.to_excel(writer, index=False)
-            file.file_blob = output.getvalue()
+            for i in range(total_rows):
+                row = [request.POST.get(f'{col}_{i}', '') for col in headers]
+                rows.append(row)
+
+            df = pd.DataFrame(rows, columns=headers)
+
+            # Save updated file_blob
+            if extension == 'csv':
+                file.file_blob = df.to_csv(index=False).encode('utf-8')
+            else:  # Excel
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False)
+                file.file_blob = output.getvalue()
 
         elif extension in ['doc', 'docx']:
-            # ✅ Handle DOCX
             paragraphs = request.POST.getlist("paragraphs")
-
             doc = DocxDocument()
             for p in paragraphs:
                 doc.add_paragraph(p)
-
             output = BytesIO()
             doc.save(output)
             file.file_blob = output.getvalue()
 
-        elif extension in ['pdf']:
-                # PDF handling → just render inline in iframe
-                return render(request, 'history_view.html', {'file': file, 'file_type': 'pdf'})
+        elif extension == 'pdf':
+            return render(request, 'history_view.html', {
+                'file': file,
+                'file_type': 'pdf'
+            })
+
         else:
-            # Unsupported format
             return redirect('history_view_file', file_id=file.id)
 
         file.save()
-        return redirect('history_edit_file', file_id=file.id)
-
+        return render(request, 'history_edit.html', {
+            'file': file,
+            'headers': headers,
+            'rows': rows,
+            'message': "✅ Changes saved successfully!"
     except Exception as e:
-        # Handle save errors gracefully
+        print("Error while saving file:", e)
         return redirect('history_edit_file', file_id=file.id)
 
 
@@ -902,7 +922,7 @@ def history_download_file(request, file_id):
 
     # Ensure file has data
     if not file_obj.file_blob:
-        raise Http404("File content is missing.")
+        raise Http404("File is missing.")
 
     content_type = file_obj.mime_type or 'application/octet-stream'
 
