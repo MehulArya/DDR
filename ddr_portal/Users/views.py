@@ -908,7 +908,7 @@ def history_save_file(request, file_id):
             'file': file,
             'headers': headers,
             'rows': rows,
-            'message': "✅ Changes saved successfully!"
+            'message': "✅ Changes saved successfully!"})
     except Exception as e:
         print("Error while saving file:", e)
         return redirect('history_edit_file', file_id=file.id)
@@ -1118,12 +1118,6 @@ def file_preview(request, file_id):
             reader = csv.reader(io.StringIO(content))
             rows = list(reader)
 
-            return render(request, 'preview.html', {
-                'file': file,
-                'rows': rows,
-                'file_type': 'csv'
-            })
-
         elif filename.endswith('.xlsx'):
             in_memory_file = io.BytesIO(file.file_blob)
             wb = openpyxl.load_workbook(in_memory_file)
@@ -1131,19 +1125,25 @@ def file_preview(request, file_id):
             for row in sheet.iter_rows(values_only=True):
                 rows.append([cell if cell is not None else '' for cell in row])
 
-            return render(request, 'preview.html', {
-                'file': file,
-                'rows': rows,
-                'file_type': 'xlsx'
-            })
-
         else:
-            return render(request, 'preview.html', {
+            return render(request, 'template_preview.html', {
                 'file': file,
                 'rows': None,
                 'file_type': 'other'
             })
 
+        # ✅ Normalize rows so all rows have the same length
+        if rows:
+            max_len = max(len(r) for r in rows)
+            rows = [list(r) + [""] * (max_len - len(r)) for r in rows]
+
+        return render(request, 'template_preview.html', {
+            'file': file,
+            'rows': rows,
+            'file_type': 'table'
+        })
+
     except Exception as e:
         return HttpResponse(f"Error while reading file: {e}", status=500)
+
 
