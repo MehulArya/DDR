@@ -207,7 +207,7 @@
           <td>
             {% if not f.is_deleted %}
               <a href="{% url 'history_view_file' f.id %}">View</a> |
-              {% if f.file_name|lower|slice:"-4:" == ".csv" or f.file_name|lower|slice:"-5:" == ".xlsx" or f.file_name|lower|slice:"-5:" == ".docx" or f.file_name|lower|slice:"-4:" == ".doc"%}
+              {% if f.file_name|lower|slice:"-4:" == ".csv" or f.file_name|lower|slice:"-5:" == ".xlsx"%}
                 <a href="{% url 'history_edit_file' f.id %}">Edit</a> |
               {% endif %}
               <a href="{% url 'history_download_file' f.id %}">Download</a> |

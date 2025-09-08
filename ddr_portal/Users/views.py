@@ -678,12 +678,14 @@ def history_index(request):
 
     return render(request, 'history_index.html', {'files': files})
 
-
-import csv, io, openpyxl
-from django.http import HttpResponse
+import csv, io, openpyxl, base64
+from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, render
-import mimetypes
+from django.contrib.auth.decorators import login_required
+from docx import Document as DocxDocument
 from .models import Upload
+
+
 @login_required
 def history_view_file(request, file_id):
     file = get_object_or_404(
@@ -695,48 +697,83 @@ def history_view_file(request, file_id):
 
     filename = file.file_name.lower()
     headers, rows = [], []
+    preview_type, text_content, images_data = None, "", []
 
     try:
-        if filename.endswith('.csv'):
-            # Read CSV
-            content = file.file_blob.decode('utf-8')
+        if filename.endswith(".csv"):
+            # ✅ Read CSV
+            content = file.file_blob.decode("utf-8")
             reader = list(csv.reader(io.StringIO(content)))
             if reader:
-                headers = reader[0]         # first row = headers
-                rows = reader[1:]           # remaining rows = data
+                headers = reader[0]
+                rows = reader[1:]
 
-        elif filename.endswith('.xlsx'):
-            # Read Excel
+        elif filename.endswith(".xlsx"):
+            # ✅ Read Excel
             in_memory_file = io.BytesIO(file.file_blob)
             wb = openpyxl.load_workbook(in_memory_file, data_only=True)
             sheet = wb.active
             data = list(sheet.iter_rows(values_only=True))
 
             if data:
-                headers = [str(cell) if cell is not None else '' for cell in data[0]]
+                headers = [str(cell) if cell is not None else "" for cell in data[0]]
                 rows = [
-                    [str(cell) if cell is not None else '' for cell in row]
+                    [str(cell) if cell is not None else "" for cell in row]
                     for row in data[1:]
                 ]
 
+        elif filename.endswith(".pdf"):
+            # ✅ Mark for PDF preview
+            preview_type = "pdf"
+
+        elif filename.endswith(".docx"):
+            # ✅ Extract text and images from DOCX
+            in_memory_file = io.BytesIO(file.file_blob)
+            doc = DocxDocument(in_memory_file)
+
+            # Extract text
+            text_content = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+
+            # Extract images as base64
+            for rel in doc.part.rels.values():
+                if "image" in rel.reltype:
+                    image_stream = rel.target_part.blob
+                    b64 = base64.b64encode(image_stream).decode('utf-8')
+                    mime = rel.target_part.content_type  # e.g., image/png
+                    images_data.append(f"data:{mime};base64,{b64}")
+
+            preview_type = "docx"
+
+        elif filename.endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")):
+            # ✅ Image preview
+            preview_type = "image"
         else:
-            return render(request, 'history_view.html', {
-                'file': file,
-                'headers': None,
-                'rows': None,
-                'message': "Preview not supported for this file type."
+            return render(request, "history_view.html", {
+                "file": file,
+                "headers": None,
+                "rows": None,
+                "preview_type": None,
+                "message": "Preview not supported for this file type."
             })
 
-        return render(request, 'history_view.html', {
-            'file': file,
-            'headers': headers,
-            'rows': rows
+        return render(request, "history_view.html", {
+            "file": file,
+            "headers": headers,
+            "rows": rows,
+            "preview_type": preview_type,
+            "text_content": text_content,
+            "images_data": images_data
         })
 
     except Exception as e:
         return HttpResponse(f"Error while reading file: {e}")
 
 
+@login_required
+def view_pdf(request, file_id):
+    """Serve raw PDF so PDF.js can render it in canvas"""
+    file = get_object_or_404(Upload, id=file_id)
+    return FileResponse(io.BytesIO(file.file_blob), content_type="application/pdf")
 
 
 from io import BytesIO
@@ -881,6 +918,8 @@ def history_delete_file(request, file_id):
 
     return redirect('history_index')
 
+
+
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -1012,13 +1051,6 @@ def history_restore_file(request, file_id):
     )
     return redirect('history_index')
 
-from django.urls import reverse
-def download_file(request, file_id):
-    file_obj = get_object_or_404(Upload, id=file_id, is_deleted=False)
-    response = HttpResponse(file_obj.file_blob, content_type=file_obj.mime_type)
-    response['Content-Disposition'] = f'attachment; filename="{file_obj.file_name}"'
-    return response
-
 
 def uploaded_files(request, document_id):
     document = get_object_or_404(Document, id=document_id)
@@ -1029,56 +1061,21 @@ def uploaded_files(request, document_id):
         'files': files
     })
 
-import io, csv, openpyxl
-from django.shortcuts import render, get_object_or_404
+
+
+
+# views.py
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 from .models import Upload
+from django.contrib.auth.decorators import login_required
+import mimetypes
 
 @login_required
-def file_preview(request, file_id):
-    file = get_object_or_404(
-        Upload,
-        id=file_id,
-        folder__is_active=True,
-        document__is_deleted=False
-    )
+def view_image(request, file_id):
+    file = get_object_or_404(Upload, id=file_id)
+    mime_type, _ = mimetypes.guess_type(file.file_name)
+    return HttpResponse(file.file_blob, content_type=mime_type)
 
-    filename = file.file_name.lower()
-    rows = []
 
-    try:
-        if filename.endswith('.csv'):
-            content = file.file_blob.decode('utf-8')
-            reader = csv.reader(io.StringIO(content))
-            rows = list(reader)
-
-            return render(request, 'preview.html', {
-                'file': file,
-                'rows': rows,
-                'file_type': 'csv'
-            })
-
-        elif filename.endswith('.xlsx'):
-            in_memory_file = io.BytesIO(file.file_blob)
-            wb = openpyxl.load_workbook(in_memory_file)
-            sheet = wb.active
-            for row in sheet.iter_rows(values_only=True):
-                rows.append([cell if cell is not None else '' for cell in row])
-
-            return render(request, 'preview.html', {
-                'file': file,
-                'rows': rows,
-                'file_type': 'xlsx'
-            })
-
-        else:
-            return render(request, 'preview.html', {
-                'file': file,
-                'rows': None,
-                'file_type': 'other'
-            })
-
-    except Exception as e:
-        return HttpResponse(f"Error while reading file: {e}", status=500)
 
