@@ -145,14 +145,20 @@
       </div>
     </div>
     <div class="right-side">
-      <i class="bi bi-house-door" onclick="location.href='{% url 'admin' %}'"></i>
+      <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
       <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
     </div>
   </div>
 
   <!-- Breadcrumbs -->
   <div class="breadcrumbs">
-    <a href="{% url 'admin' %}">Dashboard</a> >
+    {% if role_id == 1 %}
+       <a href="{% url 'admin' %}">Dashboard</a> >
+    {% elif role_id == 2 %}
+        <a href="{% url 'head' %}">Dashboard</a> >
+    {% elif role_id == 3 %}
+        <a href="{% url 'faculty' %}">Dashboard</a> >
+    {% endif %}
     <a href="{% url 'folder_list' %}">Folders</a> >
     <span>Uploaded Files for {{ document.title }}</span>
   </div>
@@ -171,10 +177,10 @@
       </thead>
       <tbody>
         {% for file in files %}
-        <tr data-preview-url="{% url 'history_view_file' file.id %}">
+        <tr data-preview-url="{% url 'file_preview' file.id %}">
           <td>{{ file.file_name }}</td>
           <td>
-            <a href="{% url 'history_view_file' file.id %}" class="btn btn-sm btn-secondary">👁 View</a>
+            <a href="{% url 'file_preview' file.id %}" class="btn btn-sm btn-secondary">👁 View</a>
             <a href="{% url 'history_download_file' file.id %}" class="btn btn-sm btn-success">⬇ Download</a>
           </td>
         </tr>

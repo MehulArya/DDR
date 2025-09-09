@@ -1037,9 +1037,14 @@ def activity_log_view(request):
     })
 
 
+from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect
+from .models import Upload, ActivityLog
+
 def history_restore_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
     file_obj.is_deleted = False
+    file_obj.upload_time = timezone.now()   # 👈 restore hone par naya time de do
     file_obj.save()
 
     ActivityLog.objects.create(
@@ -1050,6 +1055,7 @@ def history_restore_file(request, file_id):
         timestamp=timezone.now()
     )
     return redirect('history_index')
+
 
 
 def uploaded_files(request, document_id):
@@ -1079,3 +1085,81 @@ def view_image(request, file_id):
 
 
 
+
+
+
+@login_required
+def file_preview(request, file_id=None):
+    # Pehle folders + unke files lao
+    folders = Folder.objects.filter(is_active=True).prefetch_related("upload_set")
+
+    # Agar specific file preview karna ho
+    file = None
+    headers, rows = [], []
+    preview_type, text_content, images_data = None, "", []
+
+    if file_id:
+        file = get_object_or_404(
+            Upload,
+            id=file_id,
+            folder__is_active=True,
+            document__is_deleted=False
+        )
+
+        filename = file.file_name.lower()
+
+        try:
+            if filename.endswith(".csv"):
+                content = file.file_blob.decode("utf-8")
+                reader = list(csv.reader(io.StringIO(content)))
+                if reader:
+                    headers = reader[0]
+                    rows = reader[1:]
+
+            elif filename.endswith(".xlsx"):
+                in_memory_file = io.BytesIO(file.file_blob)
+                wb = openpyxl.load_workbook(in_memory_file, data_only=True)
+                sheet = wb.active
+                data = list(sheet.iter_rows(values_only=True))
+
+                if data:
+                    headers = [str(cell) if cell is not None else "" for cell in data[0]]
+                    rows = [
+                        [str(cell) if cell is not None else "" for cell in row]
+                        for row in data[1:]
+                    ]
+
+            elif filename.endswith(".pdf"):
+                preview_type = "pdf"
+
+            elif filename.endswith(".docx"):
+                in_memory_file = io.BytesIO(file.file_blob)
+                doc = DocxDocument(in_memory_file)
+
+                text_content = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+
+                for rel in doc.part.rels.values():
+                    if "image" in rel.reltype:
+                        image_stream = rel.target_part.blob
+                        b64 = base64.b64encode(image_stream).decode('utf-8')
+                        mime = rel.target_part.content_type
+                        images_data.append(f"data:{mime};base64,{b64}")
+
+                preview_type = "docx"
+
+            elif filename.endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")):
+                preview_type = "image"
+
+        except Exception as e:
+            return HttpResponse(f"Error while reading file: {e}")
+
+    return render(request, "preview.html", {
+        "folders": folders,          # ✅ Sare folders bhi bhej diye
+        "file": file,                # ✅ Agar specific file ho
+        "headers": headers,
+        "rows": rows,
+        "preview_type": preview_type,
+        "text_content": text_content,
+        "images_data": images_data,
+        "folders": folders,
+    })

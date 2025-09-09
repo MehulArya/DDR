@@ -69,4 +69,5 @@ urlpatterns = [
     path('documents/<int:document_id>/uploads/', views.uploaded_files, name='uploaded_files'),
     path("pdf/<int:file_id>/", views.view_pdf, name="view_pdf"),
     path('view/image/<int:file_id>/', views.view_image, name='view_image'),
+    path("preview/<int:file_id>/", views.file_preview, name="file_preview"),
 ]

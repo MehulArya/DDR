@@ -200,14 +200,20 @@
     </div>
 
     <div class="right-side">
-      <i class="bi bi-house-door" onclick="location.href='{% url 'admin' %}'"></i>
+      <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
       <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
     </div>
   </div>
 
   <!-- Breadcrumbs -->
   <div class="breadcrumbs">
-    <a href="{% url 'admin' %}">Dashboard</a> >
+    {% if role_id == 1 %}
+        <a href="{% url 'admin' %}">Dashboard</a> >
+    {% elif role_id == 2 %}
+        <a href="{% url 'head' %}">Dashboard</a> >
+    {% elif role_id == 3 %}
+        <a href="{% url 'faculty' %}">Dashboard</a> >
+    {% endif %}
     <a href="{% url 'folder_edit_documents' document.folder.id %}">{{ document.folder.folder_name }}</a> >
     <span>Edit Document</span>
   </div>
