@@ -23,7 +23,4 @@ The **Departmental Document Repository(DDR) Portal** is a role-based document ma
 
 -Aarohi Mathur
 
--Shivani Faujdar
-
--Tanishqa Yadav
 
