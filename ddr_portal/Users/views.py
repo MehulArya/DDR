@@ -185,7 +185,7 @@ def role_redirect(request):
 # Folder and document views
 # -----------------------------
 
-@login_required()
+@login_required
 def folder_list(request):
     # Only root folders (parent is NULL)
     folders = Folder.objects.filter(is_active=True, parent__isnull=True)
@@ -198,7 +198,6 @@ from .models import Folder, Document
 
 @login_required
 def folder_documents(request, folder_id):
-    # Current folder
     folder = get_object_or_404(Folder, id=folder_id, is_active=True)
 
     # Documents inside this folder
@@ -219,7 +218,6 @@ def folder_documents(request, folder_id):
         'documents': documents,
         'subfolders': subfolders
     })
-
 
 
 # -----------------------------
@@ -358,7 +356,7 @@ def see_template(request, doc_id):
 def upload_folder_list(request):
     user = request.user
 
-    # Admin check
+    # Check if user is admin
     is_admin = FolderUserRole.objects.filter(
         user=user,
         role__role_name__iexact="admin"
@@ -381,11 +379,12 @@ def upload_folder_list(request):
 def upload_document_list(request, folder_id):
     user = request.user
 
-    # Check access
+    # Check if user is allowed to see this folder
     is_admin = FolderUserRole.objects.filter(
         user=user,
         role__role_name__iexact="admin"
     ).exists()
+
     if not is_admin:
         has_access = FolderUserRole.objects.filter(user=user, folder_id=folder_id).exists()
         if not has_access:
@@ -411,8 +410,6 @@ def upload_document_list(request, folder_id):
         'documents': documents,
         'subfolders': subfolders
     })
-
-
 
 
 @require_POST
@@ -485,21 +482,21 @@ def assign_folder_role(request):
         if user_id and role_id:
             try:
                 if role_id == admin_role_id:
-                    # Assign admin role to all folders and files
                     for folder in Folder.objects.filter(is_active=True):
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
                             folder_id=folder.id,
                             role_id=role_id
                         )
+
                     for file in Document.objects.filter(is_deleted=False):
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
                             file_id=file.id,
                             role_id=role_id
                         )
-                    messages.success(request, "Admin role assigned with full access.")
 
+                    messages.success(request, "Admin role assigned with full access.")
                 else:
                     # Determine if file_id is a subfolder
                     if file_id and str(file_id).startswith("subfolder-"):
@@ -560,7 +557,6 @@ def assign_folder_role(request):
         "documents": documents,
         "subfolders": subfolders,
     })
-
 
 @login_required
 def folder_role_assignments(request):
@@ -657,7 +653,6 @@ def folder_documents_edit(request, folder_id):
         'subfolders': subfolders,
         'subfolder_documents': subfolder_documents
     })
-
 
 def edit_dynamic_table(request, doc_id):
     document = get_object_or_404(Document, id=doc_id, is_deleted=False)
@@ -775,11 +770,11 @@ def history_index(request):
 
     return render(request, 'history_index.html', {'files': files})
 
-
-import csv, io, openpyxl
-from django.http import HttpResponse
+import csv, io, openpyxl, base64
+from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, render
-import mimetypes
+from django.contrib.auth.decorators import login_required
+from docx import Document as DocxDocument
 from .models import Upload
 
 @login_required
@@ -793,83 +788,83 @@ def history_view_file(request, file_id):
 
     filename = file.file_name.lower()
     headers, rows = [], []
+    preview_type, text_content, images_data = None, "", []
 
     try:
-        if filename.endswith('.csv'):
-            # Read CSV
-            content = file.file_blob.decode('utf-8')
+        if filename.endswith(".csv"):
+            # ✅ Read CSV
+            content = file.file_blob.decode("utf-8")
             reader = list(csv.reader(io.StringIO(content)))
             if reader:
-                headers = reader[0]         # first row = headers
-                rows = reader[1:]           # remaining rows = data
+                headers = reader[0]
+                rows = reader[1:]
 
-        elif filename.endswith('.xlsx'):
-            # Read Excel
+        elif filename.endswith(".xlsx"):
+            # ✅ Read Excel
             in_memory_file = io.BytesIO(file.file_blob)
             wb = openpyxl.load_workbook(in_memory_file, data_only=True)
             sheet = wb.active
             data = list(sheet.iter_rows(values_only=True))
 
             if data:
-                headers = [str(cell) if cell is not None else '' for cell in data[0]]
+                headers = [str(cell) if cell is not None else "" for cell in data[0]]
                 rows = [
-                    [str(cell) if cell is not None else '' for cell in row]
+                    [str(cell) if cell is not None else "" for cell in row]
                     for row in data[1:]
                 ]
 
+        elif filename.endswith(".pdf"):
+            # ✅ Mark for PDF preview
+            preview_type = "pdf"
+
+        elif filename.endswith(".docx"):
+            # ✅ Extract text and images from DOCX
+            in_memory_file = io.BytesIO(file.file_blob)
+            doc = DocxDocument(in_memory_file)
+
+            # Extract text
+            text_content = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+
+            # Extract images as base64
+            for rel in doc.part.rels.values():
+                if "image" in rel.reltype:
+                    image_stream = rel.target_part.blob
+                    b64 = base64.b64encode(image_stream).decode('utf-8')
+                    mime = rel.target_part.content_type  # e.g., image/png
+                    images_data.append(f"data:{mime};base64,{b64}")
+
+            preview_type = "docx"
+
+        elif filename.endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")):
+            # ✅ Image preview
+            preview_type = "image"
         else:
-            return render(request, 'history_view.html', {
-                'file': file,
-                'headers': None,
-                'rows': None,
-                'message': "Preview not supported for this file type."
+            return render(request, "history_view.html", {
+                "file": file,
+                "headers": None,
+                "rows": None,
+                "preview_type": None,
+                "message": "Preview not supported for this file type."
             })
 
-        return render(request, 'history_view.html', {
-            'file': file,
-            'headers': headers,
-            'rows': rows
+        return render(request, "history_view.html", {
+            "file": file,
+            "headers": headers,
+            "rows": rows,
+            "preview_type": preview_type,
+            "text_content": text_content,
+            "images_data": images_data
         })
 
     except Exception as e:
         return HttpResponse(f"Error while reading file: {e}")
 
 
-
-
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
-import mimetypes
-from .models import Upload
-from django.http import Http404
-
-def serve_file(request, file_id):
+@login_required
+def view_pdf(request, file_id):
+    """Serve raw PDF so PDF.js can render it in canvas"""
     file = get_object_or_404(Upload, id=file_id)
-    mime_type, _ = mimetypes.guess_type(file.file_name)
-    if mime_type is None:
-        mime_type = "application/octet-stream"
-
-    filename_lower = file.file_name.lower()
-
-    # ✅ PDFs and images → render inline
-    if mime_type in ["application/pdf"] or mime_type.startswith("image/"):
-        response = HttpResponse(file.file_blob, content_type=mime_type)
-        response["Content-Disposition"] = f'inline; filename="{file.file_name}"'
-        return response
-
-    # ✅ DOC/DOCX → view via Office Web Viewer
-    elif filename_lower.endswith(('.doc', '.docx')):
-        # build a public URL to serve the file
-        file_url = request.build_absolute_uri(f"/serve-file/{file.id}/?download=1")
-        office_viewer_url = f"https://view.officeapps.live.com/op/embed.aspx?src={file_url}"
-        return response
-
-    # ✅ Default → force download
-    else:
-        response = HttpResponse(file.file_blob, content_type=mime_type)
-        response["Content-Disposition"] = f'attachment; filename="{file.file_name}"'
-        return response
-
+    return FileResponse(io.BytesIO(file.file_blob), content_type="application/pdf")
 
 
 from io import BytesIO
@@ -915,17 +910,6 @@ def history_edit_file(request, file_id):
                 'file_type': 'excel'
             }
 
-        elif extension in ['doc', 'docx']:
-            document = DocxDocument(file_stream)
-            doc_data = [para.text for para in document.paragraphs if para.text.strip()]
-            if not doc_data:
-                return render(request, 'history_edit.html', {'error': 'File is empty or unreadable.'})
-            context = {
-                'doc_data': doc_data,
-                'file_id': file_id,
-                'file_type': 'doc'
-            }
-
         else:
             return render(request, 'history_edit.html', {'error': 'Unsupported file format'})
 
@@ -958,57 +942,43 @@ def history_save_file(request, file_id):
     )
 
     extension = file.file_name.lower().split('.')[-1]
-    rows, headers = [], []
 
     try:
         if extension in ['csv', 'xls', 'xlsx']:
-            # Recreate DataFrame from POST data
-            rows = []
+            # ✅ Recreate DataFrame from POST data
             headers = request.POST.getlist('columns')
             total_rows = int(request.POST.get('total_rows', 0))
 
+            rows = []
             for i in range(total_rows):
                 row = [request.POST.get(f'{col}_{i}', '') for col in headers]
                 rows.append(row)
 
             df = pd.DataFrame(rows, columns=headers)
 
-            # Save updated file_blob
+            # ✅ Save updated file_blob
             if extension == 'csv':
-                file.file_blob = df.to_csv(index=False).encode('utf-8')
-            else:  # Excel
+                file.file_blob = df.to_csv(index=False, header=True).encode('utf-8')
+            else:  # Excel (xls / xlsx)
                 output = BytesIO()
                 with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                    df.to_excel(writer, index=False)
+                    df.to_excel(writer, index=False, header=True)
                 file.file_blob = output.getvalue()
 
-        elif extension in ['doc', 'docx']:
-            paragraphs = request.POST.getlist("paragraphs")
-            doc = DocxDocument()
-            for p in paragraphs:
-                doc.add_paragraph(p)
-            output = BytesIO()
-            doc.save(output)
-            file.file_blob = output.getvalue()
+            file.save()
 
-        elif extension == 'pdf':
-            return render(request, 'history_view.html', {
-                'file': file,
-                'file_type': 'pdf'
-            })
+            # ✅ Instead of going back → show updated preview
+            return redirect('history_edit_file', file_id=file.id)
 
         else:
-            return redirect('history_view_file', file_id=file.id)
+            return redirect('history_edit_file', file_id=file.id)
 
-        file.save()
-        return render(request, 'history_edit_file', {
-            'file': file,
-            'headers': headers,
-            'rows': rows,
-            'message': "✅ Changes saved successfully!"})
     except Exception as e:
         print("Error while saving file:", e)
         return redirect('history_edit_file', file_id=file.id)
+
+
+
 
 
 from django.http import HttpResponse, Http404
@@ -1042,6 +1012,8 @@ def history_delete_file(request, file_id):
     )
 
     return redirect('history_index')
+
+
 
 from django.utils import timezone
 from django.contrib import messages
@@ -1151,7 +1123,7 @@ def edit_folder_documents(request, folder_id):
                     folder=folder,
                     dynamic_data="{}",  # empty JSON
                     created_at=timezone.now(),
-                    is_deleted=False,
+                    is_deleted=False  # default to active
                 )
                 messages.success(request, "Document added successfully.")
             else:
@@ -1229,9 +1201,14 @@ def activity_log_view(request):
     })
 
 
+from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect
+from .models import Upload, ActivityLog
+
 def history_restore_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
     file_obj.is_deleted = False
+    file_obj.upload_time = timezone.now()   # 👈 restore hone par naya time de do
     file_obj.save()
 
     ActivityLog.objects.create(
@@ -1243,12 +1220,6 @@ def history_restore_file(request, file_id):
     )
     return redirect('history_index')
 
-from django.urls import reverse
-def download_file(request, file_id):
-    file_obj = get_object_or_404(Upload, id=file_id, is_deleted=False)
-    response = HttpResponse(file_obj.file_blob, content_type=file_obj.mime_type)
-    response['Content-Disposition'] = f'attachment; filename="{file_obj.file_name}"'
-    return response
 
 
 def uploaded_files(request, document_id):
@@ -1260,56 +1231,98 @@ def uploaded_files(request, document_id):
         'files': files
     })
 
-import io, csv, openpyxl
-from django.shortcuts import render, get_object_or_404
+
+
+
+# views.py
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 from .models import Upload
+from django.contrib.auth.decorators import login_required
+import mimetypes
 
 @login_required
-def file_preview(request, file_id):
-    file = get_object_or_404(
-        Upload,
-        id=file_id,
-        folder__is_active=True,
-        document__is_deleted=False
-    )
-
-    filename = file.file_name.lower()
-    rows = []
-
-    try:
-        if filename.endswith('.csv'):
-            content = file.file_blob.decode('utf-8')
-            reader = csv.reader(io.StringIO(content))
-            rows = list(reader)
-
-        elif filename.endswith('.xlsx'):
-            in_memory_file = io.BytesIO(file.file_blob)
-            wb = openpyxl.load_workbook(in_memory_file)
-            sheet = wb.active
-            for row in sheet.iter_rows(values_only=True):
-                rows.append([cell if cell is not None else '' for cell in row])
-
-        else:
-            return render(request, 'template_preview.html', {
-                'file': file,
-                'rows': None,
-                'file_type': 'other'
-            })
-
-        # ✅ Normalize rows so all rows have the same length
-        if rows:
-            max_len = max(len(r) for r in rows)
-            rows = [list(r) + [""] * (max_len - len(r)) for r in rows]
-
-        return render(request, 'template_preview.html', {
-            'file': file,
-            'rows': rows,
-            'file_type': 'table'
-        })
-
-    except Exception as e:
-        return HttpResponse(f"Error while reading file: {e}", status=500)
+def view_image(request, file_id):
+    file = get_object_or_404(Upload, id=file_id)
+    mime_type, _ = mimetypes.guess_type(file.file_name)
+    return HttpResponse(file.file_blob, content_type=mime_type)
 
 
+
+
+
+
+@login_required
+def file_preview(request, file_id=None):
+    # Pehle folders + unke files lao
+    folders = Folder.objects.filter(is_active=True).prefetch_related("upload_set")
+
+    # Agar specific file preview karna ho
+    file = None
+    headers, rows = [], []
+    preview_type, text_content, images_data = None, "", []
+
+    if file_id:
+        file = get_object_or_404(
+            Upload,
+            id=file_id,
+            folder__is_active=True,
+            document__is_deleted=False
+        )
+
+        filename = file.file_name.lower()
+
+        try:
+            if filename.endswith(".csv"):
+                content = file.file_blob.decode("utf-8")
+                reader = list(csv.reader(io.StringIO(content)))
+                if reader:
+                    headers = reader[0]
+                    rows = reader[1:]
+
+            elif filename.endswith(".xlsx"):
+                in_memory_file = io.BytesIO(file.file_blob)
+                wb = openpyxl.load_workbook(in_memory_file, data_only=True)
+                sheet = wb.active
+                data = list(sheet.iter_rows(values_only=True))
+
+                if data:
+                    headers = [str(cell) if cell is not None else "" for cell in data[0]]
+                    rows = [
+                        [str(cell) if cell is not None else "" for cell in row]
+                        for row in data[1:]
+                    ]
+
+            elif filename.endswith(".pdf"):
+                preview_type = "pdf"
+
+            elif filename.endswith(".docx"):
+                in_memory_file = io.BytesIO(file.file_blob)
+                doc = DocxDocument(in_memory_file)
+
+                text_content = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+
+                for rel in doc.part.rels.values():
+                    if "image" in rel.reltype:
+                        image_stream = rel.target_part.blob
+                        b64 = base64.b64encode(image_stream).decode('utf-8')
+                        mime = rel.target_part.content_type
+                        images_data.append(f"data:{mime};base64,{b64}")
+
+                preview_type = "docx"
+
+            elif filename.endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp")):
+                preview_type = "image"
+
+        except Exception as e:
+            return HttpResponse(f"Error while reading file: {e}")
+
+    return render(request, "preview.html", {
+        "folders": folders,          # ✅ Sare folders bhi bhej diye
+        "file": file,                # ✅ Agar specific file ho
+        "headers": headers,
+        "rows": rows,
+        "preview_type": preview_type,
+        "text_content": text_content,
+        "images_data": images_data,
+    })

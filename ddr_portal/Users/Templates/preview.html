@@ -2,171 +2,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Template Preview - {{ document.title }}</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f7f9fc;
-    }
-
-    /* Top Bar */
-    .top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 30px;
-      background-color: #fff;
-      border-bottom: 1px solid #ddd;
-      height: 70px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .left-side {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .logo-placeholder {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background-color: #eee;
-    }
-
-    .logo-placeholder img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .search-box input {
-      padding: 10px 16px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      outline: none;
-      width: 320px;
-      font-size: 14px;
-    }
-
-    .right-side {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      margin-right: 40px;
-    }
-
-    .right-side i {
-      font-size: 22px;
-      color: #333;
-      cursor: pointer;
-    }
-
-    /* Breadcrumbs */
-    .breadcrumbs {
-      padding: 20px 30px 0;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .breadcrumbs a {
-      text-decoration: none;
-      color: #003973;
-      margin-right: 5px;
-    }
-
-    .breadcrumbs a:hover {
-      text-decoration: underline;
-    }
-
-    /* Main Section */
-    .content-section {
-      background-color: #fff;
-      margin: 30px auto 40px auto;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      max-width: 95%;
-    }
-
-    h2 {
-      color: #003973;
-      margin-bottom: 20px;
-    }
-
-    .table-container {
-      overflow-x: auto;
-      width: 100%;
-    }
-
-    table {
-      border-collapse: collapse;
-      white-space: nowrap;
-      min-width: max-content;
-      width: auto;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px 14px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #bbd3ea;
-      color: rgb(22, 1, 1);
-      font-weight: 600;
-    }
-
-    a.back {
-      display: inline-block;
-      margin-top: 20px;
-      text-decoration: none;
-      color: #003973;
-    }
-
-    a.back:hover {
-      text-decoration: underline;
-    }
-
-    /* Download button */
-    .download-btn {
-      background-color: #003973;
-      color: white;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 15px;
-      font-size: 14px;
-    }
-
-    .download-btn:hover {
-      background-color: #00509e;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Preview: {{ file.file_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script> <!-- ✅ PDF.js -->
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 20px;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .breadcrumbs {
+            margin-bottom: 15px;
+        }
+        .breadcrumbs a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        .breadcrumbs span {
+            color: #555;
+        }
+        .content-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin-top: 15px;
+            max-width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        .message {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="left-side">
-      <div class="logo-placeholder">
-        <img src="{% static 'images/skit_logo.jpg' %}" alt="Logo">
-      </div>
-    </div>
-
-    <div class="right-side">
-      <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
-      <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
-    </div>
-  </div>
-
-  <div class="breadcrumbs">
+    <!-- ✅ Breadcrumbs -->
+    <div class="breadcrumbs">
     {% if role_id == 1 %}
         <a href="{% url 'admin' %}">Dashboard</a> >
     {% elif role_id == 2 %}
@@ -174,46 +68,136 @@
     {% elif role_id == 3 %}
         <a href="{% url 'faculty' %}">Dashboard</a> >
     {% endif %}
-    <a href="{% url 'upload_folder_list' %}">Folders</a> >
-    <span>{{ folder.folder_name }}</span>
-  </div>
-
-  <!-- Main Content -->
-  <div class="content-section">
-    <h2>Template Preview: {{ document.title }}</h2>
-
-    <button id="downloadExcel" class="download-btn">Download as Excel</button>
-
-    <div class="table-container">
-      <table id="dataTable">
-        <thead>
-          <tr>
-            {% for col in columns %}
-              <th>{{ col.name }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            {% for col in columns %}
-              <td>...</td>
-            {% endfor %}
-          </tr>
-        </tbody>
-      </table>
+        <span>Preview: {{ file.file_name }}</span>
     </div>
 
-    <a class="back" href="{% url 'folder_documents' document.folder.id %}">← Back to Documents</a>
-  </div>
+    <!-- ✅ Content Section -->
+    <div class="content-section">
+        <h2>👁 Preview of {{ file.file_name }}</h2>
 
-<script>
-    document.getElementById("downloadExcel").addEventListener("click", function () {
-        let table = document.getElementById("dataTable");
-        let workbook = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-        let docName = "{{ document.title|escapejs }}";
-        docName = docName.replace(/[^a-z0-9_\-]/gi, "_");
-        XLSX.writeFile(workbook, docName + ".xlsx");
-    });
-</script>
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+
+        <!-- ✅ PDF Preview -->
+        {% if preview_type == "pdf" %}
+            <canvas id="pdf-canvas"></canvas>
+            <script>
+                const url = "{% url 'view_pdf' file.id %}";
+                const canvas = document.getElementById('pdf-canvas');
+                const ctx = canvas.getContext('2d');
+
+                pdfjsLib.getDocument(url).promise.then(pdf => {
+                    pdf.getPage(1).then(page => {
+                        const viewport = page.getViewport({scale: 1.2});
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        page.render({canvasContext: ctx, viewport: viewport});
+                    });
+                });
+            </script>
+
+        <!-- ✅ Image Preview -->
+        {% elif preview_type == "image" %}
+            <canvas id="image-canvas"></canvas>
+            <script>
+               const canvas = document.getElementById('image-canvas');
+               const ctx = canvas.getContext('2d');
+               const img = new Image();
+               img.src = "{% url 'view_image' file.id %}";
+               img.onload = () => {
+                   canvas.width = img.width;
+                   canvas.height = img.height;
+                   ctx.drawImage(img, 0, 0);
+               };
+            </script>
+
+        <!-- ✅ DOCX Preview -->
+        {% elif preview_type == "docx" %}
+            <canvas id="docx-canvas"></canvas>
+            <script>
+                const canvas = document.getElementById('docx-canvas');
+                const ctx = canvas.getContext('2d');
+
+                const lineHeight = 24;
+                const margin = 20;
+                const fontSize = 16;
+                const fontFamily = "Segoe UI";
+
+                ctx.font = fontSize + "px " + fontFamily;
+                ctx.fillStyle = "#000";
+
+                const textLines = `{{ text_content|escapejs }}`.split('\n');
+                let y = margin;
+
+                let canvasWidth = 800;
+                let canvasHeight = margin*2 + textLines.length * lineHeight;
+
+                const images = {{ images_data|safe }};
+                const imageObjects = [];
+                let loadedImages = 0;
+
+                images.forEach(src => {
+                    const img = new Image();
+                    img.src = src;
+                    img.onload = () => {
+                        imageObjects.push(img);
+                        canvasHeight += img.height + 10;
+                        loadedImages++;
+                        if (loadedImages === images.length) {
+                            drawCanvas();
+                        }
+                    };
+                });
+
+                if (images.length === 0) drawCanvas();
+
+                function drawCanvas() {
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    ctx.fillStyle = "#000";
+                    ctx.font = fontSize + "px " + fontFamily;
+                    y = margin;
+
+                    textLines.forEach(line => {
+                        ctx.fillText(line, margin, y);
+                        y += lineHeight;
+                    });
+
+                    imageObjects.forEach(img => {
+                        ctx.drawImage(img, margin, y);
+                        y += img.height + 10;
+                    });
+                }
+            </script>
+
+        <!-- ✅ CSV / Excel Preview -->
+        {% elif headers %}
+            <table>
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for col in row %}
+                                <td>{{ col }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {% else %}
+            <p>No data to preview.</p>
+        {% endif %}
+
+      <a href="{% url 'uploaded_files' document_id=file.document.id %}" class="back-btn">← Back to view file page</a>
+
+    </div>
 </body>
 </html>
