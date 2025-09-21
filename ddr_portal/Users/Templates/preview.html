@@ -3,11 +3,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Preview: {{ file.file_name }}</title>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <title>Template Preview - {{ document.title }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -15,6 +13,7 @@
       background-color: #f7f9fc;
     }
 
+    /* Top Bar */
     .top-bar {
       display: flex;
       align-items: center;
@@ -45,6 +44,15 @@
       object-fit: cover;
     }
 
+    .search-box input {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+      width: 320px;
+      font-size: 14px;
+    }
+
     .right-side {
       display: flex;
       align-items: center;
@@ -58,6 +66,7 @@
       cursor: pointer;
     }
 
+    /* Breadcrumbs */
     .breadcrumbs {
       padding: 20px 30px 0;
       font-size: 14px;
@@ -74,6 +83,7 @@
       text-decoration: underline;
     }
 
+    /* Main Section */
     .content-section {
       background-color: #fff;
       margin: 30px auto 40px auto;
@@ -81,7 +91,6 @@
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
       max-width: 95%;
-      overflow-x: auto;   /* ✅ allows horizontal scroll */
     }
 
     h2 {
@@ -89,33 +98,61 @@
       margin-bottom: 20px;
     }
 
-    /* ✅ Table styles */
-    table.dataTable {
-      width: 100% !important;
+    .table-container {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
       border-collapse: collapse;
+      white-space: nowrap;
+      min-width: max-content;
+      width: auto;
     }
 
-    table.dataTable thead th {
-      white-space: nowrap; /* ✅ keeps headers on one line */
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px 14px;
+      text-align: left;
     }
 
-    table.dataTable td {
-      white-space: nowrap; /* ✅ prevents cells from breaking */
+    th {
+      background-color: #bbd3ea;
+      color: rgb(22, 1, 1);
+      font-weight: 600;
     }
 
-    /* ✅ Hover row effect */
-    table tbody tr {
-      transition: background-color 0.2s ease;
+    a.back {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #003973;
     }
 
-    table tbody tr:hover {
-      background-color: #f1f5ff !important;
+    a.back:hover {
+      text-decoration: underline;
+    }
+
+    /* Download button */
+    .download-btn {
+      background-color: #003973;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .download-btn:hover {
+      background-color: #00509e;
     }
   </style>
 </head>
 <body>
 
-  <!-- ✅ Top Bar -->
+  <!-- Top Bar -->
   <div class="top-bar">
     <div class="left-side">
       <div class="logo-placeholder">
@@ -124,54 +161,59 @@
     </div>
 
     <div class="right-side">
-      <i class="bi bi-house-door" onclick="location.href='{% url 'admin' %}'"></i>
+      <i class="bi bi-house-door" onclick="location.href='{% url 'role_redirect' %}'"></i>
       <i class="bi bi-person-circle" onclick="location.href='{% url 'profile' %}'"></i>
     </div>
   </div>
 
-  <!-- ✅ Breadcrumbs -->
   <div class="breadcrumbs">
-    <a href="{% url 'admin' %}">Dashboard</a> >
-    <a href="{% url 'folder_list' %}">Folders</a> >
-    <span>Preview: {{ file.file_name }}</span>
+    {% if role_id == 1 %}
+        <a href="{% url 'admin' %}">Dashboard</a> >
+    {% elif role_id == 2 %}
+        <a href="{% url 'head' %}">Dashboard</a> >
+    {% elif role_id == 3 %}
+        <a href="{% url 'faculty' %}">Dashboard</a> >
+    {% endif %}
+    <a href="{% url 'upload_folder_list' %}">Folders</a> >
+    <span>{{ folder.folder_name }}</span>
   </div>
 
-  <!-- ✅ Content Section -->
+  <!-- Main Content -->
   <div class="content-section">
-    <h2>👁 Preview of {{ file.file_name }}</h2>
+    <h2>Template Preview: {{ document.title }}</h2>
 
-    {% if rows %}
-      <table id="previewTable" class="display table table-bordered table-striped">
+    <button id="downloadExcel" class="download-btn">Download as Excel</button>
+
+    <div class="table-container">
+      <table id="dataTable">
         <thead>
           <tr>
-            {% for col in headers %}
-              <th>{{ col }}</th>
+            {% for col in columns %}
+              <th>{{ col.name }}</th>
             {% endfor %}
           </tr>
         </thead>
         <tbody>
-          {% for row in rows %}
-            <tr>
-              {% for cell in row %}
-                <td>{{ cell }}</td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
+          <tr>
+            {% for col in columns %}
+              <td>...</td>
+            {% endfor %}
+          </tr>
         </tbody>
       </table>
-    {% else %}
-      <p class="text-danger">❌ This file cannot be displayed or is empty.</p>
-    {% endif %}
+    </div>
 
-    <a href="{% url 'folder_list' %}" class="btn btn-link mt-3">← Back to Folders</a>
+    <a class="back" href="{% url 'folder_documents' document.folder.id %}">← Back to Documents</a>
   </div>
 
-  <script>
-    $(document).ready(function () {
-      $('#previewTable').DataTable({
-        scrollX: true   // ✅ makes DataTable itself horizontally scrollable
-      });
+<script>
+    document.getElementById("downloadExcel").addEventListener("click", function () {
+        let table = document.getElementById("dataTable");
+        let workbook = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+        let docName = "{{ document.title|escapejs }}";
+        docName = docName.replace(/[^a-z0-9_\-]/gi, "_");
+        XLSX.writeFile(workbook, docName + ".xlsx");
     });
-  </script>
+</script>
 </body>
 </html>

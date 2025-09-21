@@ -185,21 +185,41 @@ def role_redirect(request):
 # Folder and document views
 # -----------------------------
 
-@login_required
+@login_required()
 def folder_list(request):
-    folders = Folder.objects.filter(is_active=1)
+    # Only root folders (parent is NULL)
+    folders = Folder.objects.filter(is_active=True, parent__isnull=True)
     return render(request, 'folder_list.html', {'folders': folders})
 
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+from .models import Folder, Document
+
 @login_required
 def folder_documents(request, folder_id):
+    # Current folder
     folder = get_object_or_404(Folder, id=folder_id, is_active=True)
-    documents = Document.objects.filter(folder_id=folder.id, is_deleted=False, folder__is_active=True)
+
+    # Documents inside this folder
+    documents = Document.objects.filter(
+        folder=folder,
+        is_deleted=False,
+        folder__is_active=True
+    )
+
+    # Subfolders inside this folder
+    subfolders = Folder.objects.filter(
+        parent=folder,
+        is_active=True
+    )
 
     return render(request, 'documents.html', {
         'folder': folder,
-        'documents': documents
+        'documents': documents,
+        'subfolders': subfolders
     })
+
 
 
 # -----------------------------
@@ -338,19 +358,21 @@ def see_template(request, doc_id):
 def upload_folder_list(request):
     user = request.user
 
-    # Check if user is admin
+    # Admin check
     is_admin = FolderUserRole.objects.filter(
         user=user,
         role__role_name__iexact="admin"
     ).exists()
 
     if is_admin:
-        # Admin sees all folders
-        folders = Folder.objects.filter(is_active=True)
+        # Admin sees all root folders
+        folders = Folder.objects.filter(parent__isnull=True, is_active=True)
     else:
-        # Non-admin sees only assigned folders
+        # Non-admin sees only root folders they have access to
         folders = Folder.objects.filter(
-            id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True), is_active=True
+            id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True),
+            parent__isnull=True,
+            is_active=True
         ).distinct()
 
     return render(request, 'upload_file_list.html', {'folders': folders})
@@ -359,23 +381,38 @@ def upload_folder_list(request):
 def upload_document_list(request, folder_id):
     user = request.user
 
-    # Check if user is allowed to see this folder
+    # Check access
     is_admin = FolderUserRole.objects.filter(
         user=user,
         role__role_name__iexact="admin"
     ).exists()
-
     if not is_admin:
         has_access = FolderUserRole.objects.filter(user=user, folder_id=folder_id).exists()
         if not has_access:
             return HttpResponse("Unauthorized", status=403)
 
     folder = get_object_or_404(Folder, id=folder_id, is_active=True)
-    documents = Document.objects.filter(folder_id=folder.id, is_deleted=False)
+
+    # Documents inside this folder
+    documents = Document.objects.filter(folder=folder, is_deleted=False)
+
+    # Only immediate subfolders of this folder
+    if is_admin:
+        subfolders = Folder.objects.filter(parent=folder, is_active=True)
+    else:
+        subfolders = Folder.objects.filter(
+            parent=folder,
+            is_active=True,
+            id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True)
+        ).distinct()
+
     return render(request, 'upload_document_list.html', {
         'folder': folder,
-        'documents': documents
+        'documents': documents,
+        'subfolders': subfolders
     })
+
+
 
 
 @require_POST
@@ -429,6 +466,12 @@ def get_visible_documents(user, folder):
     return Document.objects.filter(id__in=faculty_roles.values_list('file_id', flat=True), is_active=True, is_deleted=False)
 
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.utils.timezone import now
+from .models import User, Role, Folder, Document, FolderUserRole
+
 @login_required
 def assign_folder_role(request):
     admin_role_id = Role.objects.get(role_name__iexact="admin").role_id
@@ -442,39 +485,59 @@ def assign_folder_role(request):
         if user_id and role_id:
             try:
                 if role_id == admin_role_id:
+                    # Assign admin role to all folders and files
                     for folder in Folder.objects.filter(is_active=True):
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
                             folder_id=folder.id,
                             role_id=role_id
                         )
-
                     for file in Document.objects.filter(is_deleted=False):
                         FolderUserRole.objects.get_or_create(
                             user_id=user_id,
                             file_id=file.id,
                             role_id=role_id
                         )
-
                     messages.success(request, "Admin role assigned with full access.")
-                else:
-                    exists = FolderUserRole.objects.filter(
-                        user_id=user_id,
-                        folder_id=folder_id,
-                        file_id=file_id
-                    ).exists()
 
-                    if exists:
-                        messages.warning(request, "This role assignment already exists.")
+                else:
+                    # Determine if file_id is a subfolder
+                    if file_id and str(file_id).startswith("subfolder-"):
+                        subfolder_id = int(file_id.replace("subfolder-", ""))
+                        exists = FolderUserRole.objects.filter(
+                            user_id=user_id,
+                            folder_id=subfolder_id,
+                            role_id=role_id
+                        ).exists()
+                        if exists:
+                            messages.warning(request, "This role assignment already exists.")
+                        else:
+                            FolderUserRole.objects.create(
+                                user_id=user_id,
+                                folder_id=subfolder_id,
+                                role_id=role_id,
+                                assigned_at=now()
+                            )
+                            messages.success(request, "Role assigned successfully to subfolder.")
                     else:
-                        FolderUserRole.objects.create(
+                        # file_id is a document
+                        exists = FolderUserRole.objects.filter(
                             user_id=user_id,
                             folder_id=folder_id,
                             file_id=file_id,
-                            role_id=role_id,
-                            assigned_at=now()
-                        )
-                        messages.success(request, "Role assigned successfully.")
+                            role_id=role_id
+                        ).exists()
+                        if exists:
+                            messages.warning(request, "This role assignment already exists.")
+                        else:
+                            FolderUserRole.objects.create(
+                                user_id=user_id,
+                                folder_id=folder_id,
+                                file_id=file_id,
+                                role_id=role_id,
+                                assigned_at=now()
+                            )
+                            messages.success(request, "Role assigned successfully to document/folder.")
 
             except Exception as e:
                 messages.error(request, f"Error: {str(e)}")
@@ -485,16 +548,19 @@ def assign_folder_role(request):
 
     # GET request → show form only
     users = User.objects.all()
-    folders = Folder.objects.filter(is_active=True)
+    folders = Folder.objects.filter(is_active=True, parent__isnull=True)  # Only top-level folders
     roles = Role.objects.all()
     documents = Document.objects.filter(is_deleted=False).select_related("folder")
+    subfolders = Folder.objects.filter(is_active=True, parent__isnull=False)  # Subfolders
 
     return render(request, "assign_folder_roles.html", {
         "users": users,
         "folders": folders,
         "roles": roles,
         "documents": documents,
+        "subfolders": subfolders,
     })
+
 
 @login_required
 def folder_role_assignments(request):
@@ -551,16 +617,47 @@ def remove_role(request, user_role_id):
 
 
 def edit_list(request):
-    folders = Folder.objects.filter(is_active=True)
+    # Only root folders (no parent)
+    folders = Folder.objects.filter(is_active=True, parent=None)
     return render(request, 'edit_list.html', {'folders': folders})
 
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+from .models import Folder, Document
+
+@login_required
 def folder_documents_edit(request, folder_id):
+    # Get the current folder
     folder = get_object_or_404(Folder, id=folder_id, is_active=True)
-    documents = Document.objects.filter(folder=folder, is_deleted=False, folder__is_active=True)
+
+    # Get documents directly under this folder
+    documents = Document.objects.filter(
+        folder=folder,
+        is_deleted=False,
+        folder__is_active=True
+    )
+
+    # Get subfolders directly under this folder
+    subfolders = Folder.objects.filter(
+        parent=folder,
+        is_active=True
+    )
+
+    # Optional: Get all documents inside subfolders (non-recursive)
+    subfolder_documents = Document.objects.filter(
+        folder__in=subfolders,
+        is_deleted=False,
+        folder__is_active=True
+    )
+
     return render(request, 'folder_documents.html', {
         'folder': folder,
-        'documents': documents
+        'documents': documents,
+        'subfolders': subfolders,
+        'subfolder_documents': subfolder_documents
     })
+
 
 def edit_dynamic_table(request, doc_id):
     document = get_object_or_404(Document, id=doc_id, is_deleted=False)
@@ -904,7 +1001,7 @@ def history_save_file(request, file_id):
             return redirect('history_view_file', file_id=file.id)
 
         file.save()
-        return render(request, 'history_edit.html', {
+        return render(request, 'history_edit_file', {
             'file': file,
             'headers': headers,
             'rows': rows,
@@ -950,7 +1047,7 @@ from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
-from .models import Folder
+from .models import Folder, Document
 
 @login_required
 def edit_folders(request):
@@ -964,6 +1061,7 @@ def edit_folders(request):
                 Folder.objects.create(
                     folder_name=folder_name,
                     category=category or None,
+                    parent=None,  # root folder
                     created_at=timezone.now(),
                     updated_at=timezone.now(),
                     is_active=True,
@@ -972,39 +1070,78 @@ def edit_folders(request):
             else:
                 messages.error(request, "Folder name cannot be empty.")
 
+
         elif action == "delete":
+
             folder_id = request.POST.get("folder_id")
+
             folder = Folder.objects.filter(id=folder_id, is_active=True).first()
+
             if folder:
-                # Soft delete folder
-                folder.is_active = False
-                folder.updated_at = timezone.now()
-                folder.save()
 
-                # Soft delete all related documents
-                Document.objects.filter(folder=folder, is_deleted=False).update(
-                    is_deleted=True,
-                )
+                soft_delete_folder_and_descendants(folder)
 
-                messages.success(request, "Folder and its documents deleted successfully (soft delete).")
+                messages.success(request, "Folder, its subfolders and all related documents soft-deleted successfully.")
+
             else:
                 messages.error(request, "Folder not found or already deleted.")
 
         return redirect("edit_folders")
 
-    # Show only active + not deleted folders
-    folders = Folder.objects.filter(is_active=True).order_by("folder_name")
+    # Only show active root folders
+    folders = Folder.objects.filter(is_active=True, parent__isnull=True).order_by("folder_name")
     return render(request, "edit_folders.html", {"folders": folders})
 
+from django.db import transaction
+from django.utils import timezone
+
+def collect_descendant_folder_ids(root_id):
+    """
+    Return list of descendant folder IDs (does NOT include root_id).
+    Uses iterative BFS-style queries to avoid deep recursion and to be efficient.
+    """
+    descendants = []
+    queue = [root_id]
+
+    while True:
+        children = list(Folder.objects.filter(parent_id__in=queue).values_list('id', flat=True))
+        # stop when no more children
+        if not children:
+            break
+        descendants.extend(children)
+        queue = children
+
+    return descendants  # list of ids (may be empty)
+
+def soft_delete_folder_and_descendants(root_folder):
+    """
+    Soft-delete root_folder and every descendant folder + all documents under them.
+    Uses bulk updates for efficiency. Does NOT call model .save() on each instance,
+    so model signals (pre_save/post_save) will NOT be triggered.
+    """
+    now_ts = timezone.now()
+    # collect descendant ids (does not include root)
+    descendant_ids = collect_descendant_folder_ids(root_folder.id)
+    # build set of all ids including root
+    all_folder_ids = set(descendant_ids) | {root_folder.id}
+
+    with transaction.atomic():
+        # mark folders inactive and set updated_at
+        Folder.objects.filter(id__in=all_folder_ids).update(is_active=False, updated_at=now_ts)
+
+        # mark all docs in those folders as deleted
+        Document.objects.filter(folder_id__in=all_folder_ids, is_deleted=False).update(is_deleted=True)
 
 
-# Manage documents within a folder: list, add, soft delete
 @login_required
 def edit_folder_documents(request, folder_id):
-    folder = get_object_or_404(Folder, id=folder_id, is_active=True)  # ensure folder is active
+    folder = get_object_or_404(Folder, id=folder_id, is_active=True)
 
     if request.method == "POST":
-        if "add_document" in request.POST:
+        action = request.POST.get("action")
+
+        # ---------------- Add Document ----------------
+        if action == "add_document":
             title = request.POST.get("title")
             description = request.POST.get("description", "")
             if title:
@@ -1014,14 +1151,14 @@ def edit_folder_documents(request, folder_id):
                     folder=folder,
                     dynamic_data="{}",  # empty JSON
                     created_at=timezone.now(),
-                    is_deleted=False  # default to active
+                    is_deleted=False,
                 )
                 messages.success(request, "Document added successfully.")
             else:
-                messages.error(request, "Title is required.")
-            return redirect("edit_folder_documents", folder_id=folder.id)
+                messages.error(request, "Document title cannot be empty.")
 
-        elif "delete_document" in request.POST:
+        # ---------------- Delete Document (Soft) ----------------
+        elif action == "delete_document":
             doc_id = request.POST.get("doc_id")
             doc = Document.objects.filter(id=doc_id, folder=folder, is_deleted=False).first()
             if doc:
@@ -1030,14 +1167,43 @@ def edit_folder_documents(request, folder_id):
                 messages.success(request, "Document marked as deleted.")
             else:
                 messages.error(request, "Document not found or already deleted.")
-            return redirect("edit_folder_documents", folder_id=folder.id)
 
-    # Only show non-deleted documents
+        # ---------------- Add Subfolder ----------------
+        elif action == "add_subfolder":
+            subfolder_name = request.POST.get("subfolder_name")
+            category = request.POST.get("category")
+            if subfolder_name:
+                Folder.objects.create(
+                    folder_name=subfolder_name,
+                    parent=folder,
+                    category=category or None,
+                    created_at=timezone.now(),
+                    updated_at=timezone.now(),
+                    is_active=True,
+                )
+                messages.success(request, "Subfolder added successfully.")
+            else:
+                messages.error(request, "Subfolder name cannot be empty.")
+
+        # ---------------- Delete Subfolder (Recursive Soft Delete) ----------------
+        elif action == "delete_subfolder":
+            sub_id = request.POST.get("sub_id")
+            # ensure subfolder is a child of current folder
+            subfolder = Folder.objects.filter(id=sub_id, parent=folder).first()
+            if subfolder and subfolder.is_active:
+                soft_delete_folder_and_descendants(subfolder)
+                messages.success(request, "Subfolder and all nested subfolders/documents soft-deleted successfully.")
+            else:
+                messages.error(request, "Subfolder not found or already deleted.")
+
+    # ---------------- Display ----------------
     documents = Document.objects.filter(folder=folder, is_deleted=False)
+    subfolders = Folder.objects.filter(parent=folder, is_active=True).order_by("folder_name")
 
     return render(request, "edit_folder_documents.html", {
         "folder": folder,
         "documents": documents,
+        "subfolders": subfolders,
     })
 
 

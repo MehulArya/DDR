@@ -97,7 +97,7 @@
       color: #003973;
     }
 
-    .document {
+    .document, .subfolder {
       background-color: #f0f4ff;
       padding: 14px;
       border-radius: 8px;
@@ -110,12 +110,19 @@
       display: block;
     }
 
-    .document:hover {
+    .document:hover, .subfolder:hover {
       background-color: #d9e8ff;
     }
 
     .hidden {
       display: none;
+    }
+
+    .section-title {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #003973;
     }
   </style>
 </head>
@@ -128,7 +135,7 @@
         <img src="{% static 'images/skit_logo.jpg' %}" alt="Logo">
       </div>
       <div class="search-box">
-        <input type="text" id="documentSearch" placeholder="Search documents..." onkeyup="filterDocuments()">
+        <input type="text" id="documentSearch" placeholder="Search documents or folders..." onkeyup="filterItems()">
       </div>
     </div>
 
@@ -147,12 +154,23 @@
 
   <!-- Main Content -->
   <div class="folder-section">
-    <h2>Documents in {{ folder.folder_name }}</h2>
+
+    {% if subfolders %}
+      <div class="section-title">Subfolders</div>
+      <div id="subfolderContainer">
+        {% for subfolder in subfolders %}
+          <a class="subfolder" data-title="{{ subfolder.folder_name|lower }}" href="{% url 'folder_edit_documents' subfolder.id %}">
+            📁 {{ subfolder.folder_name }}
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     {% if documents %}
+      <div class="section-title">Documents</div>
       <div id="documentContainer">
         {% for document in documents %}
-          <a class="document" data-document-title="{{ document.title|lower }}" href="{% url 'edit_dynamic_table' document.id %}">
+          <a class="document" data-title="{{ document.title|lower }}" href="{% url 'edit_dynamic_table' document.id %}">
             📄 {{ document.title }}
           </a>
         {% endfor %}
@@ -160,18 +178,28 @@
     {% else %}
       <div class="document">No documents in this folder.</div>
     {% endif %}
+
+    <a class="back" href="{% url 'upload_folder_list' %}">← Back to Folder List</a>
   </div>
 
   <!-- Search Filter Script -->
   <script>
-    function filterDocuments() {
+    function filterItems() {
       const input = document.getElementById('documentSearch');
       const filter = input.value.toLowerCase();
-      const documents = document.querySelectorAll('#documentContainer .document');
 
+      // Filter documents
+      const documents = document.querySelectorAll('#documentContainer .document');
       documents.forEach(doc => {
-        const title = doc.getAttribute('data-document-title');
+        const title = doc.getAttribute('data-title');
         doc.style.display = title.includes(filter) ? '' : 'none';
+      });
+
+      // Filter subfolders
+      const subfolders = document.querySelectorAll('#subfolderContainer .subfolder');
+      subfolders.forEach(folder => {
+        const title = folder.getAttribute('data-title');
+        folder.style.display = title.includes(filter) ? '' : 'none';
       });
     }
   </script>

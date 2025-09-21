@@ -1861,6 +1861,7 @@ CREATE TABLE uploads (
     file_size BIGINT,
     mime_type NVARCHAR(255),
     sha256_hash CHAR(64),
+    is_deleted BIT NOT NULL DEFAULT 0,
 
     CONSTRAINT FK_uploads_document FOREIGN KEY (document_id) REFERENCES DOCUMENTS(id),
     CONSTRAINT FK_uploads_folder FOREIGN KEY (folder_id) REFERENCES FOLDERS(id),
@@ -1879,12 +1880,15 @@ CREATE TABLE FOLDER_USER_ROLE (
 
     CONSTRAINT UQ_user_folder UNIQUE (user_id, folder_id, file_id)
 );
+GO
+
+-- User Activity log
 
 CREATE TABLE Users_activitylog (
     id INT IDENTITY(1,1) PRIMARY KEY,
     user_id INT NOT NULL,
-    upload_id INT NULL,
-    file_name NVARCHAR(255) NULL,
+    upload_id INT NULL,                   
+    file_name NVARCHAR(255) NULL,         
     action NVARCHAR(20) NOT NULL,
     timestamp DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
 
@@ -1892,7 +1896,5 @@ CREATE TABLE Users_activitylog (
         REFERENCES auth_user(id) ON DELETE CASCADE,
 
     CONSTRAINT FK_activitylog_upload FOREIGN KEY (upload_id)
-        REFERENCES uploads(id) ON DELETE SET NULL
+        REFERENCES uploads(id) ON DELETE SET NULL 
 );
-
-GO

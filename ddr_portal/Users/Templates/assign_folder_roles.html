@@ -26,14 +26,6 @@
     .left-side { display: flex; align-items: center; gap: 20px; }
     .logo-placeholder { width: 48px; height: 48px; border-radius: 50%; background-color: #eee; }
     .logo-placeholder img { width: 100%; height: 100%; object-fit: cover; }
-    .search-box input {
-      padding: 10px 16px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      outline: none;
-      width: 320px;
-      font-size: 14px;
-    }
     .right-side { display: flex; align-items: center; gap: 18px; margin-right: 40px; }
     .right-side i { font-size: 22px; color: #333; cursor: pointer; }
 
@@ -61,11 +53,7 @@
     }
 
     /* Form styling */
-    form label {
-      font-weight: 500;
-      margin-bottom: 5px;
-      display: block;
-    }
+    form label { font-weight: 500; margin-bottom: 5px; display: block; }
     form select, form button {
       width: 100%;
       padding: 10px;
@@ -81,85 +69,77 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    form button:hover {
-      background-color: #0057b7;
-    }
-
-    /* Table styling */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    table th, table td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      font-size: 14px;
-      text-align: left;
-    }
-    table th {
-      background-color: #f0f4ff;
-      color: #003973;
-    }
-    table tr:hover {
-      background-color: #f9fbff;
-    }
+    form button:hover { background-color: #0057b7; }
   </style>
 
   <script>
-    const allFiles = {};
-    {% for f in documents %}
-      if (!allFiles["{{ f.folder.id }}"]) {
-        allFiles["{{ f.folder.id }}"] = [];
-      }
-      allFiles["{{ f.folder.id }}"].push({ id: "{{ f.id }}", title: "{{ f.title }}" });
+  // Prepare folder contents with subfolders + documents
+  const folderContents = {};
+
+  {% for folder in folders %}
+    folderContents["{{ folder.id }}"] = [];
+
+    // Add subfolders
+    {% for sub in subfolders %}
+      {% if sub.parent and sub.parent.id == folder.id %}
+        folderContents["{{ folder.id }}"].push({ id: "subfolder-{{ sub.id }}", title: "{{ sub.folder_name }} (Subfolder)" });
+      {% endif %}
     {% endfor %}
 
-    function updateUI() {
-      const roleSelect = document.getElementById("roleSelect");
-      const folderContainer = document.getElementById("folderContainer");
-      const fileContainer = document.getElementById("fileContainer");
-      const folderSelect = document.getElementById("folderSelect");
-      const fileSelect = document.getElementById("fileSelect");
+    // Add documents
+    {% for doc in documents %}
+      {% if doc.folder.id == folder.id %}
+        folderContents["{{ folder.id }}"].push({ id: "{{ doc.id }}", title: "{{ doc.title }}" });
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
 
-      const selectedRole = roleSelect.options[roleSelect.selectedIndex].text.toLowerCase();
+  function updateUI() {
+    const roleSelect = document.getElementById("roleSelect");
+    const folderContainer = document.getElementById("folderContainer");
+    const fileContainer = document.getElementById("fileContainer");
+    const folderSelect = document.getElementById("folderSelect");
+    const fileSelect = document.getElementById("fileSelect");
 
-      if (selectedRole === "admin") {
-        folderContainer.style.display = "none";
-        fileContainer.style.display = "none";
-        fileSelect.innerHTML = "";
-        return;
-      }
+    const selectedRole = roleSelect.options[roleSelect.selectedIndex].text.toLowerCase();
 
-      folderContainer.style.display = "block";
-
-      if (selectedRole === "faculty") {
-        const selectedFolder = folderSelect.value;
-        const files = allFiles[selectedFolder] || [];
-        fileSelect.innerHTML = "";
-
-        files.forEach(file => {
-          const option = document.createElement("option");
-          option.value = file.id;
-          option.text = file.title;
-          fileSelect.appendChild(option);
-        });
-
-        fileContainer.style.display = "block";
-      } else {
-        fileContainer.style.display = "none";
-        fileSelect.innerHTML = "";
-      }
+    if (selectedRole === "admin") {
+      folderContainer.style.display = "none";
+      fileContainer.style.display = "none";
+      fileSelect.innerHTML = "";
+      return;
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("roleSelect").addEventListener("change", updateUI);
-      document.getElementById("folderSelect").addEventListener("change", updateUI);
-    });
-  </script>
-</head>
-<body>
+    folderContainer.style.display = "block";
 
+    if (selectedRole === "faculty") {
+      const selectedFolder = folderSelect.value;
+      const contents = folderContents[selectedFolder] || [];
+      fileSelect.innerHTML = "";
+
+      contents.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.text = item.title;
+        fileSelect.appendChild(option);
+      });
+
+      fileContainer.style.display = contents.length ? "block" : "none";
+    } else {
+      fileContainer.style.display = "none";
+      fileSelect.innerHTML = "";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("roleSelect").addEventListener("change", updateUI);
+    document.getElementById("folderSelect").addEventListener("change", updateUI);
+  });
+</script>
+
+</head>
+
+<body>
   <!-- Top bar -->
   <div class="top-bar">
     <div class="left-side">
@@ -175,13 +155,9 @@
 
   <!-- Breadcrumbs -->
   <div class="breadcrumbs">
-    {% if role_id == 1 %}
-        <a href="{% url 'admin' %}">Dashboard</a> >
-    {% elif role_id == 2 %}
-        <a href="{% url 'head' %}">Dashboard</a> >
-    {% elif role_id == 3 %}
-        <a href="{% url 'faculty' %}">Dashboard</a> >
-    {% endif %}
+    {% if role_id == 1 %}<a href="{% url 'admin' %}">Dashboard</a> >{% endif %}
+    {% if role_id == 2 %}<a href="{% url 'head' %}">Dashboard</a> >{% endif %}
+    {% if role_id == 3 %}<a href="{% url 'faculty' %}">Dashboard</a> >{% endif %}
     <span>Assign Roles</span>
   </div>
 
@@ -197,46 +173,43 @@
       </ul>
     {% endif %}
 
-
     <form method="post">
-  {% csrf_token %}
+      {% csrf_token %}
 
-  <!-- User -->
-  <label>User:</label>
-  <select name="user_id" required>
-    {% for user in users %}
-      <option value="{{ user.id }}">{{ user.username }}</option>
-    {% endfor %}
-  </select>
+      <!-- User -->
+      <label>User:</label>
+      <select name="user_id" required>
+        {% for user in users %}
+          <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+      </select>
 
-  <!-- Role -->
-  <label>Role:</label>
-  <select name="role_id" id="roleSelect" required>
-    {% for role in roles %}
-      <option value="{{ role.role_id }}">{{ role.role_name }}</option>
-    {% endfor %}
-  </select>
+      <!-- Role -->
+      <label>Role:</label>
+      <select name="role_id" id="roleSelect" required>
+        {% for role in roles %}
+          <option value="{{ role.role_id }}">{{ role.role_name }}</option>
+        {% endfor %}
+      </select>
 
-  <!-- Folder (hidden until role != admin) -->
-  <div id="folderContainer" style="display: none;">
-    <label>Folder:</label>
-    <select name="folder_id" id="folderSelect" required>
-      {% for folder in folders %}
-        <option value="{{ folder.id }}">{{ folder.folder_name }}</option>
-      {% endfor %}
-    </select>
+      <!-- Folder -->
+      <div id="folderContainer" style="display: none;">
+        <label>Folder:</label>
+        <select name="folder_id" id="folderSelect" required>
+          {% for folder in folders %}
+            <option value="{{ folder.id }}">{{ folder.folder_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Subfolder / File -->
+      <div id="fileContainer" style="display: none;">
+        <label>Subfolder / Document:</label>
+        <select name="file_id" id="fileSelect"></select>
+      </div>
+
+      <button type="submit">Assign Role</button>
+    </form>
   </div>
-
-  <!-- File (only if faculty) -->
-  <div id="fileContainer" style="display: none;">
-    <label>File:</label>
-    <select name="file_id" id="fileSelect"></select>
-  </div>
-
-  <button type="submit">Assign Role</button>
-</form>
-
-  </div>
-
 </body>
 </html>

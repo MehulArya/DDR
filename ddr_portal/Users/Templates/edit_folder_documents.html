@@ -12,7 +12,6 @@
       background-color: #f7f9fc;
     }
 
-    /* Top Bar */
     .top-bar {
       display: flex;
       align-items: center;
@@ -65,7 +64,6 @@
       cursor: pointer;
     }
 
-    /* Breadcrumbs */
     .breadcrumbs {
       padding: 20px 30px 0;
       font-size: 14px;
@@ -82,7 +80,6 @@
       text-decoration: underline;
     }
 
-    /* Main Section */
     .content-section {
       background-color: #fff;
       margin: 30px 80px 40px 80px;
@@ -91,13 +88,11 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
-    h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
+    h2, h3 {
       color: #003973;
+      margin-bottom: 20px;
     }
 
-    /* Form Styling */
     form.add-form {
       display: flex;
       gap: 10px;
@@ -126,11 +121,11 @@
       background-color: #00509e;
     }
 
-    /* Table Styling */
     table {
       border-collapse: collapse;
       width: 100%;
       font-size: 14px;
+      margin-bottom: 20px;
     }
 
     th, td {
@@ -149,7 +144,6 @@
       background-color: #f4f8ff;
     }
 
-    /* Delete Button */
     .delete-btn {
       background-color: #d9534f;
       color: white;
@@ -164,7 +158,6 @@
       background-color: #c9302c;
     }
 
-    /* Back Link */
     .back-link {
       display: inline-block;
       margin-top: 15px;
@@ -187,7 +180,7 @@
         <img src="{% static 'images/skit_logo.jpg' %}" alt="Logo">
       </div>
       <div class="search-box">
-        <input type="text" id="docSearch" placeholder="Search documents..." onkeyup="filterDocs()">
+        <input type="text" id="docSearch" placeholder="Search items..." onkeyup="filterDocs()">
       </div>
     </div>
 
@@ -206,48 +199,87 @@
 
   <!-- Main Section -->
   <div class="content-section">
-    <h2>Documents in Folder: {{ folder.folder_name }}</h2>
+    <h2>Folder: {{ folder.folder_name }}</h2>
 
     <!-- Add Document Form -->
     <form method="POST" class="add-form">
       {% csrf_token %}
+      <input type="hidden" name="action" value="add_document">
       <input type="text" name="title" placeholder="New Document Title" required>
       <input type="text" name="description" placeholder="Description (optional)">
-      <button type="submit" name="add_document">Add Document</button>
+      <button type="submit">Add Document</button>
     </form>
 
+    <!-- Add Subfolder Form -->
+    <form method="POST" class="add-form">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_subfolder">
+      <input type="text" name="subfolder_name" placeholder="New Subfolder Name" required>
+      <input type="text" name="category" placeholder="Category (optional)">
+      <button type="submit">Add Subfolder</button>
+    </form>
+
+    <!-- Subfolder List -->
+    <h3>Subfolders</h3>
+    <table id="subfolderTable">
+      <thead>
+        <tr>
+          <th>Folder Name</th>
+          <th>Category</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in subfolders %}
+        <tr data-doc-title="{{ sub.folder_name|lower }}">
+          <td><a href="{% url 'edit_folder_documents' sub.id %}">📁 {{ sub.folder_name }}</a></td>
+          <td>{{ sub.category|default:"-" }}</td>
+          <td>
+            <form method="POST" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_subfolder">
+              <input type="hidden" name="sub_id" value="{{ sub.id }}">
+              <button type="submit" class="delete-btn" onclick="return confirm('Delete this subfolder?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" style="text-align:center;">No subfolders found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
     <!-- Document List -->
-    <div class="table-container">
-      <table id="docTable">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for doc in documents %}
-          <tr data-doc-title="{{ doc.title|lower }}">
-            <td>{{ doc.title }}</td>
-            <td>{{ doc.description|default:"-" }}</td>
-            <td>
-              <form method="POST" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="doc_id" value="{{ doc.id }}">
-                <button type="submit" name="delete_document" class="delete-btn"
-                  onclick="return confirm('Delete this document?')">Delete</button>
-              </form>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="3" style="text-align: center;">No documents found.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <h3>Documents</h3>
+    <table id="docTable">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in documents %}
+        <tr data-doc-title="{{ doc.title|lower }}">
+          <td>{{ doc.title }}</td>
+          <td>{{ doc.description|default:"-" }}</td>
+          <td>
+            <form method="POST" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete_document">
+              <input type="hidden" name="doc_id" value="{{ doc.id }}">
+              <button type="submit" class="delete-btn" onclick="return confirm('Delete this document?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" style="text-align: center;">No documents found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
     <!-- Back Link -->
     <p><a href="{% url 'edit_folders' %}" class="back-link">← Back to Folders</a></p>
@@ -257,8 +289,7 @@
   <script>
     function filterDocs() {
       const input = document.getElementById('docSearch').value.toLowerCase();
-      const rows = document.querySelectorAll('#docTable tbody tr');
-
+      const rows = document.querySelectorAll('#docTable tbody tr, #subfolderTable tbody tr');
       rows.forEach(row => {
         const title = row.getAttribute('data-doc-title');
         row.style.display = title.includes(input) ? '' : 'none';
