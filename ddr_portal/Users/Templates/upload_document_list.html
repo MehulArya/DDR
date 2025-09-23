@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -97,6 +96,11 @@
       margin-bottom: 20px;
     }
 
+    h3 {
+      color: #444;
+      margin: 15px 0 10px;
+    }
+
     ul {
       list-style: none;
       padding: 0;
@@ -116,6 +120,16 @@
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    li a {
+      text-decoration: none;
+      color: #003973;
+      font-weight: 500;
+    }
+
+    li a:hover {
+      text-decoration: underline;
     }
 
     button {
@@ -153,7 +167,7 @@
         <img src="{% static 'images/skit_logo.jpg' %}" alt="Logo">
       </div>
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search documents...">
+        <input type="text" id="searchInput" placeholder="Search documents or subfolders...">
       </div>
     </div>
 
@@ -178,8 +192,22 @@
 
   <!-- Main Content -->
   <div class="content-section">
-    <h2>Documents in Folder: {{ folder.folder_name }}</h2>
+    <h2>Contents of Folder: {{ folder.folder_name }}</h2>
 
+    <!-- Subfolders -->
+    <h3>Subfolders</h3>
+    <ul id="subfolderList">
+      {% for sub in subfolders %}
+        <li>
+          <span>📁 <a href="{% url 'upload_document_list' sub.id %}">{{ sub.folder_name }}</a></span>
+        </li>
+      {% empty %}
+        <li>No subfolders in this folder.</li>
+      {% endfor %}
+    </ul>
+
+    <!-- Documents -->
+    <h3>Documents</h3>
     <ul id="documentList">
       {% for doc in documents %}
         <li>
@@ -199,13 +227,15 @@
 
   <!-- JavaScript Section -->
   <script>
-    // Search filter
+    // Search filter for both subfolders & documents
     document.getElementById('searchInput').addEventListener('input', function() {
       const filter = this.value.toLowerCase();
-      const items = document.querySelectorAll('#documentList li');
-      items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(filter) ? '' : 'none';
+      const lists = [document.querySelectorAll('#subfolderList li'), document.querySelectorAll('#documentList li')];
+      lists.forEach(items => {
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.includes(filter) ? '' : 'none';
+        });
       });
     });
 

@@ -349,6 +349,13 @@ def see_template(request, doc_id):
     except Exception as e:
         return HttpResponse(f"Unexpected error: {e}", status=400)
 
+    except json.JSONDecodeError as je:
+        return HttpResponse(f"JSON Decode Error: {je}", status=400)
+    except KeyError as ke:
+        return HttpResponse(f"Missing key: {ke}", status=400)
+    except Exception as e:
+        return HttpResponse(f"Unexpected error: {e}", status=400)
+
 
 #this is for uplolad part
 
@@ -471,53 +478,69 @@ from .models import User, Role, Folder, Document, FolderUserRole
 
 @login_required
 def assign_folder_role(request):
+    from django.utils.timezone import now
+
     admin_role_id = Role.objects.get(role_name__iexact="admin").role_id
+
+    def assign_recursive(user_id, folder_id, role_id):
+        """
+        Recursively assign role to folder, all its subfolders, and documents.
+        """
+        # Assign role to folder itself
+        FolderUserRole.objects.get_or_create(
+            user_id=user_id,
+            folder_id=folder_id,
+            role_id=role_id,
+            defaults={"assigned_at": now()}
+        )
+
+        # Assign role to all documents inside this folder
+        documents = Document.objects.filter(folder_id=folder_id, is_deleted=False)
+        for doc in documents:
+            FolderUserRole.objects.get_or_create(
+                user_id=user_id,
+                file_id=doc.id,
+                role_id=role_id,
+                folder_id=folder_id,
+                defaults={"assigned_at": now()}
+            )
+
+        # Recurse into subfolders
+        subfolders = Folder.objects.filter(parent_id=folder_id, is_active=True)
+        for sub in subfolders:
+            assign_recursive(user_id, sub.id, role_id)
 
     if request.method == "POST":
         user_id = request.POST.get("user_id")
         folder_id = request.POST.get("folder_id")
         role_id = int(request.POST.get("role_id"))
         file_id = request.POST.get("file_id") or None
+        include_subtree = request.POST.get("include_subtree") == "true"
 
         if user_id and role_id:
             try:
                 if role_id == admin_role_id:
+                    # Admin → assign everything
                     for folder in Folder.objects.filter(is_active=True):
-                        FolderUserRole.objects.get_or_create(
-                            user_id=user_id,
-                            folder_id=folder.id,
-                            role_id=role_id
-                        )
-
-                    for file in Document.objects.filter(is_deleted=False):
-                        FolderUserRole.objects.get_or_create(
-                            user_id=user_id,
-                            file_id=file.id,
-                            role_id=role_id
-                        )
-
+                        assign_recursive(user_id, folder.id, role_id)
                     messages.success(request, "Admin role assigned with full access.")
                 else:
-                    # Determine if file_id is a subfolder
                     if file_id and str(file_id).startswith("subfolder-"):
                         subfolder_id = int(file_id.replace("subfolder-", ""))
-                        exists = FolderUserRole.objects.filter(
-                            user_id=user_id,
-                            folder_id=subfolder_id,
-                            role_id=role_id
-                        ).exists()
-                        if exists:
-                            messages.warning(request, "This role assignment already exists.")
+                        if include_subtree:
+                            assign_recursive(user_id, subfolder_id, role_id)
+                            messages.success(request, "Role assigned recursively to subfolder and its contents.")
                         else:
-                            FolderUserRole.objects.create(
+                            # Only assign to this subfolder
+                            FolderUserRole.objects.get_or_create(
                                 user_id=user_id,
                                 folder_id=subfolder_id,
                                 role_id=role_id,
-                                assigned_at=now()
+                                defaults={"assigned_at": now()}
                             )
-                            messages.success(request, "Role assigned successfully to subfolder.")
+                            messages.success(request, "Role assigned to selected subfolder.")
                     else:
-                        # file_id is a document
+                        # Document or folder only
                         exists = FolderUserRole.objects.filter(
                             user_id=user_id,
                             folder_id=folder_id,
@@ -545,10 +568,10 @@ def assign_folder_role(request):
 
     # GET request → show form only
     users = User.objects.all()
-    folders = Folder.objects.filter(is_active=True, parent__isnull=True)  # Only top-level folders
+    folders = Folder.objects.filter(is_active=True, parent__isnull=True)
     roles = Role.objects.all()
     documents = Document.objects.filter(is_deleted=False).select_related("folder")
-    subfolders = Folder.objects.filter(is_active=True, parent__isnull=False)  # Subfolders
+    subfolders = Folder.objects.filter(is_active=True, parent__isnull=False)
 
     return render(request, "assign_folder_roles.html", {
         "users": users,
@@ -557,6 +580,21 @@ def assign_folder_role(request):
         "documents": documents,
         "subfolders": subfolders,
     })
+
+def assign_recursive(user_id, folder_id, role_id):
+    # Assign to the folder itself
+    FolderUserRole.objects.get_or_create(user_id=user_id, folder_id=folder_id, role_id=role_id)
+
+    # Assign to all documents in this folder
+    documents = Document.objects.filter(folder_id=folder_id, is_deleted=False)
+    for doc in documents:
+        FolderUserRole.objects.get_or_create(user_id=user_id, file_id=doc.id, folder_id=folder_id, role_id=role_id)
+
+    # Recurse into subfolders
+    subfolders = Folder.objects.filter(parent_id=folder_id, is_active=True)
+    for sub in subfolders:
+        assign_recursive(user_id, sub.id, role_id)
+
 
 @login_required
 def folder_role_assignments(request):
