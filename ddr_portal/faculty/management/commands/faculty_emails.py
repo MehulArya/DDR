@@ -9,7 +9,6 @@ class Command(BaseCommand):
     help = "Import faculty emails from emails.csv into faculty_teacher table"
 
     def handle(self, *args, **kwargs):
-        # CSV file path (inside project root)
         csv_path = os.path.join(settings.BASE_DIR, "emails.csv")
 
         if not os.path.exists(csv_path):
@@ -24,7 +23,6 @@ class Command(BaseCommand):
             skipped = 0
 
             for row in reader:
-                # normalize headers (strip spaces, lowercase)
                 row = {k.strip().lower(): (v.strip() if v else "") for k, v in row.items()}
 
                 name = row.get("name")
@@ -33,8 +31,6 @@ class Command(BaseCommand):
                 if not email or not name:
                     skipped += 1
                     continue
-
-                # check if teacher exists
                 obj, created = FacultyTeacher.objects.update_or_create(
                     email=email,
                     defaults={"name": name}

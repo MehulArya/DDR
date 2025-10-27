@@ -1,96 +1,41 @@
 # your_app/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
-from .forms import CustomUserCreationForm, CustomLoginForm
 from django.contrib.auth.decorators import login_required
-from django.db import connection
-from .models import Folder, Document, Upload,FolderUserRole
-from django.http import HttpResponse
+from django.contrib.auth.models import User
+from django.db import connection, transaction
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseForbidden, FileResponse, Http404, JsonResponse
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.timezone import now
+from django.views.decorators.http import require_POST
+
+# Third-party libraries
 from openpyxl import Workbook
 from openpyxl.styles import Font
+from docx import Document as DocxDocument
+import pandas as pd
+import csv
+import openpyxl, base64
+import io
 import json
-from django.http import HttpResponseForbidden
-from .models import Document
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from .models import Folder, Role, FolderUserRole
-from django.contrib import messages
-from django.utils.timezone import now
-from django.shortcuts import render
-from .utils import get_user_role_id
-from .models import Upload
+from io import BytesIO
 import hashlib
-from django.urls import reverse
-from django.contrib import messages
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
-from .models import UserRole, ActivityLog
-from django.utils import timezone
-from .models import Folder, Document
+import mimetypes
+
+# Local imports
+from .forms import CustomUserCreationForm, CustomLoginForm
+from .models import (
+    Folder, Document, Upload, Role, FolderUserRole,
+    UserRole, ActivityLog
+)
+from .utils import get_user_role_id
 
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
-from django.contrib import messages
-from .models import Folder, Document
-
-
-
-
-from django.utils.timezone import now
-from django.db.models import Q
-from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.timezone import now
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from .models import Folder, Document, Role, FolderUserRole
-
-
-from django.shortcuts import render, get_object_or_404
-from .models import Folder, Document
-
-
-
-from .models import FolderUserRole, Document
-
-
-import json
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Document
-
-
-import io
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from .models import Upload
-import pandas as pd
-import csv
-import openpyxl
-
-import csv
-import io
-from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse
-import openpyxl
-from .models import Upload
-
-import pandas as pd
-from io import BytesIO
-from django.shortcuts import get_object_or_404, render
-from .models import Upload
-import openpyxl
-
-import pandas as pd
-from io import BytesIO
-from django.shortcuts import get_object_or_404, redirect
-from .models import Upload
-from django.db import connection
 # -----------------------------
 # Auth-related views
 # -----------------------------
@@ -128,8 +73,6 @@ def logout_view(request):
 # Role-based dashboards
 # -----------------------------
 
-
-
 def get_user_role(user_id):
     with connection.cursor() as cursor:
         cursor.execute("SELECT role_id FROM USER_ROLES WHERE user_id = %s", [user_id])
@@ -145,7 +88,6 @@ def admin_view(request):
         return HttpResponseForbidden("You do not have permission to access this page.")
     return render(request, 'admin.html')
 
-
 @login_required
 def head_view(request):
     role = get_user_role(request.user.id)
@@ -153,14 +95,12 @@ def head_view(request):
         return HttpResponseForbidden("You do not have permission to access this page.")
     return render(request, 'head.html')
 
-
 @login_required
 def faculty_view(request):
     role = get_user_role(request.user.id)
     if role != 3:
         return HttpResponseForbidden("You do not have permission to access this page.")
     return render(request, 'faculty.html')
-
 
 @login_required
 def role_redirect(request):
@@ -180,7 +120,6 @@ def role_redirect(request):
 
     return redirect('login')
 
-
 # -----------------------------
 # Folder and document views
 # -----------------------------
@@ -190,11 +129,6 @@ def folder_list(request):
     # Only root folders (parent is NULL)
     folders = Folder.objects.filter(is_active=True, parent__isnull=True)
     return render(request, 'folder_list.html', {'folders': folders})
-
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
-from .models import Folder, Document
 
 @login_required
 def folder_documents(request, folder_id):
@@ -219,18 +153,9 @@ def folder_documents(request, folder_id):
         'subfolders': subfolders
     })
 
-
 # -----------------------------
 # Excel file download view
-#
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
-from openpyxl import Workbook
-from openpyxl.styles import Font
-import json
-
-from .models import Document
+# -----------------------------
 
 @login_required
 def download_excel(request, doc_id):
@@ -292,8 +217,6 @@ def download_excel(request, doc_id):
         print("Unexpected Error:", e)
         return HttpResponse(f"Unexpected Error: {e}", status=400)
 
-
-
 @login_required
 def profile_view(request):
     user = request.user
@@ -310,9 +233,6 @@ def profile_view(request):
         'phone': 'Not Available',  # or customize if needed
         'role': role_name,
     })
-
-
-
 
 def home_view(request):
     return render(request, 'home.html')
@@ -356,8 +276,10 @@ def see_template(request, doc_id):
     except Exception as e:
         return HttpResponse(f"Unexpected error: {e}", status=400)
 
+# -----------------------------
+# Uploaded Section
+#-----------------------------
 
-#this is for uplolad part
 
 @login_required
 def upload_folder_list(request):
@@ -420,6 +342,7 @@ def upload_document_list(request, folder_id):
 
 
 @require_POST
+
 @login_required
 def ajax_upload_file(request):
     try:
@@ -468,13 +391,6 @@ def get_visible_documents(user, folder):
     # If Faculty, return only assigned documents
     faculty_roles = user_roles.filter(role__name='Faculty', file__isnull=False, is_active=True, is_deleted=False)
     return Document.objects.filter(id__in=faculty_roles.values_list('file_id', flat=True), is_active=True, is_deleted=False)
-
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils.timezone import now
-from .models import User, Role, Folder, Document, FolderUserRole
 
 @login_required
 def assign_folder_role(request):
@@ -616,8 +532,6 @@ def folder_role_assignments(request):
         "documents": documents
     })
 
-
-
 @login_required
 def remove_role(request, user_role_id):
     role_instance = get_object_or_404(FolderUserRole, id=user_role_id)
@@ -648,17 +562,10 @@ def remove_role(request, user_role_id):
 #     role_id = int(role_id) if role_id is not None else 0
 #     return render(request, "profile.html", {"role_id": role_id})
 
-
-
 def edit_list(request):
     # Only root folders (no parent)
     folders = Folder.objects.filter(is_active=True, parent=None)
     return render(request, 'edit_list.html', {'folders': folders})
-
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
-from .models import Folder, Document
 
 @login_required
 def folder_documents_edit(request, folder_id):
@@ -758,14 +665,6 @@ def edit_dynamic_table(request, doc_id):
         "columns": columns,
     })
 
-
-
-
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from .models import Upload, UserRole, FolderUserRole
-
 @login_required
 def history_index(request):
     user = request.user
@@ -807,13 +706,6 @@ def history_index(request):
         ).order_by('-upload_time')
 
     return render(request, 'history_index.html', {'files': files})
-
-import csv, io, openpyxl, base64
-from django.http import HttpResponse, FileResponse
-from django.shortcuts import get_object_or_404, render
-from django.contrib.auth.decorators import login_required
-from docx import Document as DocxDocument
-from .models import Upload
 
 @login_required
 def history_view_file(request, file_id):
@@ -904,13 +796,6 @@ def view_pdf(request, file_id):
     file = get_object_or_404(Upload, id=file_id)
     return FileResponse(io.BytesIO(file.file_blob), content_type="application/pdf")
 
-
-from io import BytesIO
-import pandas as pd
-from docx import Document as DocxDocument
-from django.shortcuts import get_object_or_404, render
-from .models import Upload, ActivityLog
-
 @login_required
 def history_edit_file(request, file_id):
     file_obj = get_object_or_404(
@@ -966,10 +851,6 @@ def history_edit_file(request, file_id):
             'error': f'❌ Error reading file: {e}'
         })
 
-
-
-
-
 @login_required
 def history_save_file(request, file_id):
     file = get_object_or_404(
@@ -1016,12 +897,6 @@ def history_save_file(request, file_id):
         return redirect('history_edit_file', file_id=file.id)
 
 
-
-
-
-from django.http import HttpResponse, Http404
-from django.shortcuts import get_object_or_404
-
 def history_download_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
 
@@ -1051,13 +926,6 @@ def history_delete_file(request, file_id):
 
     return redirect('history_index')
 
-
-
-from django.utils import timezone
-from django.contrib import messages
-from django.shortcuts import redirect, render
-from django.contrib.auth.decorators import login_required
-from .models import Folder, Document
 
 @login_required
 def edit_folders(request):
@@ -1101,9 +969,6 @@ def edit_folders(request):
     # Only show active root folders
     folders = Folder.objects.filter(is_active=True, parent__isnull=True).order_by("folder_name")
     return render(request, "edit_folders.html", {"folders": folders})
-
-from django.db import transaction
-from django.utils import timezone
 
 def collect_descendant_folder_ids(root_id):
     """
@@ -1228,20 +1093,14 @@ def activity_log_view(request):
     logs = ActivityLog.objects.select_related("user", "document").order_by("-timestamp")
     return render(request, "activity_log.html", {"logs": logs})
 
-
-
-@login_required
-def activity_log_view(request):
-    logs = ActivityLog.objects.select_related("user", "upload").order_by("-timestamp")
-
-    return render(request, "activity_log.html", {
-        "logs": logs
-    })
-
-
-from django.utils import timezone
-from django.shortcuts import get_object_or_404, redirect
-from .models import Upload, ActivityLog
+#
+# @login_required
+# def activity_log_view(request):
+#     logs = ActivityLog.objects.select_related("user", "upload").order_by("-timestamp")
+#
+#     return render(request, "activity_log.html", {
+#         "logs": logs
+#     })
 
 def history_restore_file(request, file_id):
     file_obj = get_object_or_404(Upload, id=file_id)
@@ -1258,8 +1117,6 @@ def history_restore_file(request, file_id):
     )
     return redirect('history_index')
 
-
-
 def uploaded_files(request, document_id):
     document = get_object_or_404(Document, id=document_id)
     files = Upload.objects.filter(document=document, is_deleted=False)
@@ -1270,14 +1127,7 @@ def uploaded_files(request, document_id):
     })
 
 
-
-
 # views.py
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from .models import Upload
-from django.contrib.auth.decorators import login_required
-import mimetypes
 
 @login_required
 def view_image(request, file_id):
@@ -1285,17 +1135,9 @@ def view_image(request, file_id):
     mime_type, _ = mimetypes.guess_type(file.file_name)
     return HttpResponse(file.file_blob, content_type=mime_type)
 
-
-
-
-
-
 @login_required
 def file_preview(request, file_id=None):
-    # Pehle folders + unke files lao
     folders = Folder.objects.filter(is_active=True).prefetch_related("upload_set")
-
-    # Agar specific file preview karna ho
     file = None
     headers, rows = [], []
     preview_type, text_content, images_data = None, "", []
@@ -1356,8 +1198,8 @@ def file_preview(request, file_id=None):
             return HttpResponse(f"Error while reading file: {e}")
 
     return render(request, "preview.html", {
-        "folders": folders,          # ✅ Sare folders bhi bhej diye
-        "file": file,                # ✅ Agar specific file ho
+        "folders": folders,
+        "file": file,
         "headers": headers,
         "rows": rows,
         "preview_type": preview_type,

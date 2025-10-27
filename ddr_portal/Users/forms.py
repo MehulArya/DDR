@@ -13,11 +13,9 @@ class CustomUserCreationForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
 
-        # 1. Check the domain
         if not email.endswith('@skit.ac.in'):
             raise ValidationError("Email must be a valid @skit.ac.in address.")
 
-        # 2. Check if email exists in FacultyTeacher table
         if not FacultyTeacher.objects.filter(email=email).exists():
             raise ValidationError("This email is not registered as a faculty.")
 

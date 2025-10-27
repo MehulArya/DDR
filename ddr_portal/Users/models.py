@@ -1,6 +1,7 @@
 # models.py
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Folder(models.Model):
     id = models.AutoField(primary_key=True)
@@ -34,8 +35,6 @@ class Document(models.Model):
     def __str__(self):
         return self.title
 
-
-
 class Upload(models.Model):
     id = models.AutoField(primary_key=True)
     document = models.ForeignKey('Document', on_delete=models.CASCADE, db_column='document_id')
@@ -57,8 +56,6 @@ class Upload(models.Model):
         return self.file_name
     def __str__(self):
         return f"{self.file_name} ({'Deleted' if self.is_deleted else 'Active'})"
-
-
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -106,9 +103,6 @@ class FolderUserRole(models.Model):
             parts.append(self.document.title)  # assuming 'title' is the correct field
         parts.append(self.role.role_name)
         return " - ".join(parts)
-
-
-from django.utils import timezone
 
 class ActivityLog(models.Model):
     ACTION_CHOICES = [

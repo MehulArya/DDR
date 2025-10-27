@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -80,8 +79,8 @@ WSGI_APPLICATION = 'ddr_portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
-        'NAME': 'ddr',
-        'HOST': 'Mehul-Laptop',
+        'NAME': 'DDR_COLLEGE_PROJECT',
+        'HOST': 'Riya-Laptop',
         'PORT': '',
 
         'OPTIONS': {
@@ -90,10 +89,6 @@ DATABASES = {
         },
     }
 }
-
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -138,5 +133,3 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'riyaaggarwal0102@gmail.com'             # Sender
 EMAIL_HOST_PASSWORD = 'nqdv bgvn ojfe orzb'
-
-
