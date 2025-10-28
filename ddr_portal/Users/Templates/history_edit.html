@@ -157,22 +157,24 @@
 
   <script>
     function addRow() {
-      const tableBody = document.getElementById("editTableBody");
-      const colInputs = document.querySelectorAll("input[name='columns']");
-      const rowCount = tableBody.rows.length;
+  const tableBody = document.getElementById("editTableBody");
+  const colInputs = document.querySelectorAll("input[name='columns']");
+  const rowCount = tableBody.rows.length;
 
-      let newRow = tableBody.insertRow();
-      for (let i = 0; i < colInputs.length; i++) {
-        let colName = colInputs[i].value;
-        let newCell = newRow.insertCell(i);
-        newCell.innerHTML = <input type="text" name="${colName}_${rowCount}" value="">;
-      }
+  let newRow = tableBody.insertRow();
 
-      let actionCell = newRow.insertCell(colInputs.length);
-      actionCell.innerHTML = <button type="button" class="danger-btn" onclick="deleteRow(this)">Delete</button>;
+  for (let i = 0; i < colInputs.length; i++) {
+    let colName = colInputs[i].value;
+    let newCell = newRow.insertCell(i);
+    newCell.innerHTML = `<input type="text" name="${colName}_${rowCount}" value="">`;
+  }
 
-      document.querySelector("input[name='total_rows']").value = tableBody.rows.length;
-    }
+  let actionCell = newRow.insertCell(colInputs.length);
+  actionCell.innerHTML = `<button type="button" class="danger-btn" onclick="deleteRow(this)">Delete</button>`;
+
+  document.querySelector("input[name='total_rows']").value = tableBody.rows.length;
+}
+
 
     function deleteRow(button) {
       const row = button.closest("tr");
@@ -200,13 +202,7 @@
   </div>
 
   <div class="breadcrumbs">
-    {% if role_id == 1 %}
-        <a href="{% url 'admin' %}">Dashboard</a> >
-    {% elif role_id == 2 %}
-        <a href="{% url 'head' %}">Dashboard</a> >
-    {% elif role_id == 3 %}
-        <a href="{% url 'faculty' %}">Dashboard</a> >
-    {% endif %}
+    <a href="{% url 'role_redirect' %}">Dashboard</a> >
     <a href="{% url 'history_index' %}">History Files</a> >
     <span>Edit File</span>
   </div>

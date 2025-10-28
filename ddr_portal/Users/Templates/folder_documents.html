@@ -145,14 +145,8 @@
 
   <!-- Breadcrumbs -->
   <div class="breadcrumbs">
-    {% if role_id == 1 %}
-        <a href="{% url 'admin' %}">Dashboard</a> >
-    {% elif role_id == 2 %}
-        <a href="{% url 'head' %}">Dashboard</a> >
-    {% elif role_id == 3 %}
-        <a href="{% url 'faculty' %}">Dashboard</a> >
-    {% endif %}
-    <a href="{% url 'folder_edit_documents' folder.id %}">Folders</a> >
+    <a href="{% url 'role_redirect' %}">Dashboard</a> >
+    <a href="{% url 'edit_list'  %}">Folders</a> >
     <span>{{ folder.folder_name }}</span>
   </div>
 
