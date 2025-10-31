@@ -308,23 +308,36 @@ def upload_folder_list(request):
 def upload_document_list(request, folder_id):
     user = request.user
 
-    # Check if user is allowed to see this folder
+    # ✅ Step 1: Check if the user is admin
     is_admin = FolderUserRole.objects.filter(
         user=user,
         role__role_name__iexact="admin"
     ).exists()
 
+    # ✅ Step 2: Check folder access (non-admins must be assigned to the folder)
     if not is_admin:
         has_access = FolderUserRole.objects.filter(user=user, folder_id=folder_id).exists()
         if not has_access:
             return HttpResponse("Unauthorized", status=403)
 
+    # ✅ Step 3: Get the folder (must be active)
     folder = get_object_or_404(Folder, id=folder_id, is_active=True)
 
-    # Documents inside this folder
-    documents = Document.objects.filter(folder=folder, is_deleted=False)
+    # ✅ Step 4: Show only assigned documents
+    # Admins see all documents, others see only those assigned to them
+    if is_admin:
+        documents = Document.objects.filter(folder=folder, is_deleted=False)
+    else:
+        assigned_file_ids = FolderUserRole.objects.filter(
+            user=user,
+            folder=folder
+        ).values_list('file_id', flat=True)
+        documents = Document.objects.filter(
+            id__in=assigned_file_ids,
+            is_deleted=False
+        )
 
-    # Only immediate subfolders of this folder
+    # ✅ Step 5: Subfolders logic (same as before)
     if is_admin:
         subfolders = Folder.objects.filter(parent=folder, is_active=True)
     else:
@@ -334,6 +347,7 @@ def upload_document_list(request, folder_id):
             id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True)
         ).distinct()
 
+    # ✅ Step 6: Render page
     return render(request, 'upload_document_list.html', {
         'folder': folder,
         'documents': documents,
@@ -512,6 +526,63 @@ def assign_recursive(user_id, folder_id, role_id):
         assign_recursive(user_id, sub.id, role_id)
 
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
+# @login_required
+# def under_head_role(request):
+#     # Show data only for GET request
+#     if request.method == "GET":
+#         # Get current user
+#         current_user = request.user
+#
+#         # Fetch only those assignments where current user is the folder head
+#         # Assuming Role model has a name field and folder head is stored as 'Folder Head' or similar
+#         folder_head_roles = FolderUserRole.objects.filter(
+#             user=current_user,
+#             role__name__iexact="Folder Head"   # case-insensitive match
+#         ).values_list('folder_id', flat=True)
+#
+#         # Fetch all assignments under those folders
+#         assignments = FolderUserRole.objects.select_related("user", "folder", "role", "file").filter(
+#             folder_id__in=folder_head_roles
+#         )
+#
+#         # Other dropdown data
+#         users = User.objects.exclude(is_superuser=True)
+#         folders = Folder.objects.filter(id__in=folder_head_roles)
+#         roles = Role.objects.all()
+#         documents = Document.objects.select_related('folder').filter(folder_id__in=folder_head_roles)
+#
+#         return render(request, "assign_folder_roles.html", {
+#             "users": users,
+#             "folders": folders,
+#             "roles": roles,
+#             "assignments": assignments,
+#             "documents": documents
+#         })
+#
+#     # Optional: Handle POST or others if needed
+#     else:
+#         return render(request, "error.html", {"message": "Invalid request method."})
+
+@login_required
+def under_head_role(request):
+    if request.method == "GET":
+        # Get current user
+        current_user = request.user
+
+        folder_head_roles = FolderUserRole.objects.filter(
+            user=current_user,
+            role__role_name__iexact="Head"
+        ).values_list('folder_id', flat=True)
+
+        assignments = FolderUserRole.objects.select_related("user", "folder", "role", "file").filter(folder_id__in=folder_head_roles)
+        return render(request, "folder_role_assignments.html", {"assignments": assignments})
+    else:
+        return render(request, "error.html", {"message": "Invalid request method."})
+
+
 @login_required
 def folder_role_assignments(request):
     assignments = FolderUserRole.objects.select_related("user", "folder", "role", "file").all()
@@ -556,16 +627,29 @@ def remove_role(request, user_role_id):
     messages.success(request, "Role removed successfully.")
     return redirect("folder_role_assignments")
 
-# def profile_view(request):
-#     role_id = get_user_role_id(request.user.id)
-#     print("DEBUG role_id from DB:", role_id, type(role_id))  # Check value and type
-#     role_id = int(role_id) if role_id is not None else 0
-#     return render(request, "profile.html", {"role_id": role_id})
-
+@login_required
 def edit_list(request):
-    # Only root folders (no parent)
-    folders = Folder.objects.filter(is_active=True, parent=None)
+    user = request.user
+
+    # Check if user is admin
+    is_admin = FolderUserRole.objects.filter(
+        user=user,
+        role__role_name__iexact="admin"
+    ).exists()
+
+    if is_admin:
+        # Admin sees all root folders
+        folders = Folder.objects.filter(parent__isnull=True, is_active=True)
+    else:
+        # Non-admin sees only root folders they have access to
+        folders = Folder.objects.filter(
+            id__in=FolderUserRole.objects.filter(user=user).values_list('folder_id', flat=True),
+            parent__isnull=True,
+            is_active=True
+        ).distinct()
+
     return render(request, 'edit_list.html', {'folders': folders})
+
 
 @login_required
 def folder_documents_edit(request, folder_id):
@@ -598,6 +682,7 @@ def folder_documents_edit(request, folder_id):
         'subfolders': subfolders,
         'subfolder_documents': subfolder_documents
     })
+
 
 def edit_dynamic_table(request, doc_id):
     document = get_object_or_404(Document, id=doc_id, is_deleted=False)
@@ -1087,10 +1172,8 @@ from .models import ActivityLog
 
 @login_required
 def activity_log_view(request):
-    if request.user.role != 'admin':  # only admin can see log
-        return redirect('role_redirect')
 
-    logs = ActivityLog.objects.select_related("user", "document").order_by("-timestamp")
+    logs = ActivityLog.objects.select_related("user", "upload").order_by("-timestamp")
     return render(request, "activity_log.html", {"logs": logs})
 
 #

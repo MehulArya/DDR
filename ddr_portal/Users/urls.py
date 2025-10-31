@@ -36,6 +36,7 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path("assign_roles/", views.assign_folder_role, name="assign_folder_role"),
     path("folder-role-assignments/", views.folder_role_assignments, name="folder_role_assignments"),
+    path("under_head_role/", views.under_head_role, name="under_head_role"),
     path('remove-role/<int:user_role_id>/', views.remove_role, name='remove_role'),
     path('edit_list/', views.edit_list, name='edit_list'),
     path('folder/<int:folder_id>/', views.folder_documents_edit, name='folder_edit_documents'),
